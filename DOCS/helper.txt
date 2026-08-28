@@ -1,0 +1,13 @@
+venv\Scripts\activate
+
+pip install pywifi
+
+pip install customtkinter
+
+pip install scapy
+
+
+netsh wlan show interfaces  -----> cmd
+
+
+netsh wlan show networks mode=bssid

@@ -1,0 +1,46 @@
+wifi-network-scanner/
+│
+├── main.py
+│
+├── requirements.txt
+├── README.md
+│
+├── scanner/
+│   ├── __init__.py
+│   ├── base_scanner.py
+│   ├── windows_scanner.py
+│   ├── linux_scanner.py
+│   └── scanner_manager.py
+│
+├── models/
+│   ├── __init__.py
+│   └── network.py
+│
+├── security/
+│   ├── __init__.py
+│   ├── analyzer.py
+│   └── scoring.py
+│
+├── gui/
+│   ├── __init__.py
+│   ├── main_window.py
+│   ├── network_table.py
+│   └── details_window.py
+│
+├── storage/
+│   ├── __init__.py
+│   ├── csv_export.py
+│   └── json_storage.py
+│
+├── utils/
+│   ├── __init__.py
+│   ├── parser.py
+│   └── logger.py
+│
+├── data/
+│   └── scans/
+│
+└── tests/
+    ├── test_parser.py
+    ├── test_security.py
+    └── test_scanner.py

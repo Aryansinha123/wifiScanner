@@ -1,0 +1,72 @@
+Level 1 — Basic scanner
+
+Must have:
+
+Detect Wi-Fi adapter
+Scan nearby networks
+SSID
+BSSID
+Signal strength
+Channel
+Frequency
+Security
+Number of networks
+Refresh button
+Level 2 — GUI
+
+Add:
+
+Search
+Sort
+Filter
+Scrollable table
+Network details
+Color/status indicators
+Auto-refresh
+CSV export
+
+Python's ttk.Treeview is particularly suitable because it supports multiple columns, headings and scrolling.
+
+Level 3 — Security analysis
+
+Add things such as:
+
+Security:
+    WPA3 → Strong
+    WPA2 → Good
+    WPA  → Moderate
+    WEP  → Weak
+    Open → Critical
+
+Signal:
+    -30 to -50 → Excellent
+    -50 to -60 → Good
+    -60 to -70 → Fair
+    < -70       → Weak
+
+Then display:
+
+Security Score: 82/100
+
+✓ WPA2/WPA3 enabled
+✓ Strong signal
+✓ 5 GHz network
+
+⚠ Channel congestion detected
+⚠ Multiple APs share channel
+Level 4 — Advanced cybersecurity features
+
+Later you can add:
+
+Channel congestion analysis
+2.4 GHz / 5 GHz / 6 GHz classification
+Duplicate SSID detection
+Multiple BSSID detection
+Weak-security alerts
+Hidden SSID indication
+Rogue-network heuristics
+Signal history
+Network history
+Graphs
+Scan reports
+PDF reports
