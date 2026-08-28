@@ -1,41 +1,39 @@
 def analyze_security(security: str) -> dict:
+    """
+    Analyzes normalized wireless security type and returns a dictionary
+    containing heuristic score, risk level, and educational description.
+    """
+    sec = security.upper()
 
-    security = security.upper()
-
-    if security == "WPA3":
-
+    if sec == "WPA3":
         return {
             "score": 100,
             "level": "LOW",
             "description": "Modern wireless security."
         }
 
-    if security == "WPA2":
-
+    if sec == "WPA2":
         return {
             "score": 85,
             "level": "LOW",
             "description": "Strong commonly used wireless security."
         }
 
-    if security == "WPA":
-
+    if sec == "WPA":
         return {
             "score": 60,
             "level": "MEDIUM",
             "description": "Older WPA security detected."
         }
 
-    if security == "WEP":
-
+    if sec == "WEP":
         return {
             "score": 20,
             "level": "HIGH",
             "description": "Legacy and weak wireless security."
         }
 
-    if security == "OPEN":
-
+    if sec == "OPEN":
         return {
             "score": 0,
             "level": "CRITICAL",

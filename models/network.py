@@ -4,6 +4,9 @@ from typing import Optional
 
 @dataclass
 class Network:
+    """
+    Data model representing a single discovered Wi-Fi Access Point (BSSID).
+    """
     ssid: str
     bssid: str
     signal_percent: int
@@ -15,35 +18,35 @@ class Network:
     radio_type: str
 
     def security_score(self) -> int:
-        security = self.security.upper()
+        """
+        Calculates a simplified educational security score (0-100).
+        """
+        sec = self.security.upper()
 
-        if "WPA3" in security:
+        if "WPA3" in sec:
             return 100
-
-        if "WPA2" in security:
+        if "WPA2" in sec:
             return 85
-
-        if "WPA" in security:
+        if "WPA" in sec:
             return 60
-
-        if "WEP" in security:
+        if "WEP" in sec:
             return 20
-
-        if "OPEN" in security:
+        if "OPEN" in sec:
             return 0
-
         return 50
 
     def risk_level(self) -> str:
-        score = self.security_score()
+        """
+        Returns the risk classification label based on normalized security type.
+        """
+        sec = self.security.upper()
 
-        if score >= 85:
+        if "WPA3" in sec or "WPA2" in sec:
             return "LOW"
-
-        if score >= 60:
+        if "WPA" in sec:
             return "MEDIUM"
-
-        if score >= 30:
+        if "WEP" in sec:
             return "HIGH"
-
-        return "CRITICAL"
+        if "OPEN" in sec:
+            return "CRITICAL"
+        return "UNKNOWN"

@@ -1,9 +1,15 @@
-# No external packages required for the first Windows version.
+# Wi-Fi Network Security Scanner - Requirements
 #
-# Python standard library:
-# tkinter
-# subprocess
-# threading
-# csv
-# dataclasses
-# re
+# Phase 1 uses Python 3.11+ standard library modules only.
+# No external third-party pip packages are required.
+#
+# Core standard library modules used:
+# - tkinter / ttk (GUI interface - bundled with standard Python Windows installer)
+# - subprocess (Invoking Windows netsh CLI)
+# - threading (Non-blocking background scanning)
+# - dataclasses (Network data model)
+# - csv (CSV export)
+# - re (Regex output parsing)
+# - logging (Structured event & error logging)
+# - datetime (Timestamping)
+# - unittest (Unit testing suite)
