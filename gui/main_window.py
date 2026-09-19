@@ -1,248 +1,363 @@
 import logging
 import threading
+import time
 import tkinter as tk
+from datetime import datetime
 from tkinter import ttk, messagebox, filedialog
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from scanner.scanner_manager import ScannerManager
+from scanner.scan_scheduler import ScanScheduler
+from scanner.adapter_manager import AdapterManager
 from utils.parser import parse_networks
+from utils.config import ConfigManager
 from storage.csv_export import export_networks
+from storage.database import DatabaseManager
+from monitoring.scheduler import MonitoringPipeline
+from monitoring.event_manager import EventManager
 from security.analyzer import analyze_security
+from security.risk_engine import MultiFactorRiskEngine
+from intelligence.vendor_analyzer import lookup_vendor
+from simulation.simulation_manager import SimulationManager
 from models.network import Network
+
+from gui.dashboard import DashboardView
+from gui.monitoring_window import MonitoringWindow
+from gui.history_window import HistoryWindow
+from gui.baseline_window import BaselineWindow
+from gui.analytics_window import AnalyticsWindow
+from gui.events_window import EventsWindow
+from gui.reports_window import ReportsWindow
+from gui.settings_window import SettingsWindow
+from gui.database_window import DatabaseWindow
+from gui.diagnostics_window import DiagnosticsWindow
+from gui.network_details import NetworkDetailsModal
 
 logger = logging.getLogger(__name__)
 
 
 class MainWindow:
     """
-    Main GUI Window for Wi-Fi Network Security Scanner.
+    Modular Desktop GUI for Wi-Fi Security Intelligence & Monitoring Platform.
+    Features a sidebar navigation layout connecting Dashboard, Live Scanner, Security Monitor,
+    History, Events, Analytics, Baseline Manager, Reports, Database, Settings, and Diagnostics.
     """
 
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("Wi-Fi Network Security Scanner")
-        self.root.geometry("1250x720")
-        self.root.minsize(1000, 600)
+        self.root.title("Wi-Fi Security Intelligence & Monitoring Platform")
+        self.root.geometry("1380x820")
+        self.root.minsize(1200, 750)
 
-        # Apply modern style
+        # Apply Theme Style
         self.style = ttk.Style()
         if "clam" in self.style.theme_names():
             self.style.theme_use("clam")
 
-        self.scanner = ScannerManager()
+        # Initialize Core Components
+        self.config_mgr = ConfigManager()
+        self.db = DatabaseManager(db_path=self.config_mgr.get("db_path", "data/wifi_scanner.db"))
+        self.event_mgr = EventManager(self.db)
+        self.pipeline = MonitoringPipeline(self.db, self.event_mgr)
+        self.scanner_mgr = ScannerManager()
+        self.adapter_mgr = AdapterManager(self.scanner_mgr.scanner)
+        self.scheduler = ScanScheduler(self.scanner_mgr)
+        self.sim_mgr = SimulationManager()
+
         self.networks: List[Network] = []
+        self.adapter_info: Dict[str, Any] = {}
+        self.monitoring_win: Optional[MonitoringWindow] = None
 
         self.is_scanning: bool = False
         self.auto_refresh_enabled: bool = False
-        self.refresh_interval_sec: int = 30
-        self.auto_refresh_timer_id: Optional[str] = None
+        self.refresh_interval_sec: int = self.config_mgr.get("scan_interval_sec", 30)
+
+        self.last_scan_time: str = "N/A"
+        self.last_scan_duration: float = 0.0
+
+        self.active_nav: str = "Dashboard"
+        self.nav_buttons: Dict[str, ttk.Button] = {}
 
         self.create_interface()
+        self.update_adapter_panel()
         logger.info("GUI MainWindow initialized successfully.")
 
     # ---------------------------------------------------------
-    # GUI LAYOUT CREATION
+    # LAYOUT CREATION
     # ---------------------------------------------------------
 
     def create_interface(self):
-        # Apply custom style configuration
-        self.style.configure("Header.TLabel", font=("Segoe UI", 18, "bold"))
-        self.style.configure("Stat.TLabel", font=("Segoe UI", 10, "bold"))
-        self.style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"))
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(1, weight=1)
+
+        # Custom ttk Styles
+        self.style.configure("Header.TLabel", font=("Segoe UI", 16, "bold"))
+        self.style.configure("Subtitle.TLabel", font=("Segoe UI", 9, "italic"), foreground="#555555")
+        self.style.configure("CardTitle.TLabel", font=("Segoe UI", 8, "bold"), foreground="#444444")
+        self.style.configure("CardValue.TLabel", font=("Segoe UI", 16, "bold"), foreground="#000000")
+        self.style.configure("Treeview.Heading", font=("Segoe UI", 9, "bold"))
         self.style.configure("Treeview", font=("Segoe UI", 9), rowheight=24)
 
-        # Header Frame
-        header = ttk.Frame(self.root, padding=(15, 12))
-        header.pack(fill="x")
+        self.table_tags = {
+            "CRITICAL": {"background": "#FADBD8"},
+            "HIGH": {"background": "#FDEBD0"},
+            "MEDIUM": {"background": "#FCF3CF"},
+            "LOW": {"background": "#D4EFDF"},
+            "UNKNOWN": {"background": "#E5E7E9"}
+        }
 
-        title = ttk.Label(
-            header,
-            text="Wi-Fi Network Security Scanner",
-            style="Header.TLabel"
-        )
-        title.pack(side="left")
+        # ==========================================
+        # 1. SIDEBAR NAVIGATION PANEL (LEFT)
+        # ==========================================
+        sidebar = ttk.Frame(self.root, padding=(10, 15), relief="groove")
+        sidebar.grid(row=0, column=0, sticky="nsew")
 
-        # Control Bar Frame
-        controls = ttk.Frame(self.root, padding=(15, 5))
-        controls.pack(fill="x")
+        brand_lbl = ttk.Label(sidebar, text=" Wi-Fi Intelligence ", font=("Segoe UI", 12, "bold"))
+        brand_lbl.pack(anchor="w", pady=(0, 15))
 
-        self.scan_button = ttk.Button(
-            controls,
-            text="Scan Networks",
-            command=self.start_scan
-        )
-        self.scan_button.pack(side="left", padx=(0, 8))
+        nav_items = [
+            ("Dashboard", "Dashboard"),
+            ("Live Scanner", "Live Scanner"),
+            ("Security Monitor", "Security Monitor"),
+            ("Events", "Events"),
+            ("Analytics", "Analytics"),
+            ("Baseline", "Baseline"),
+            ("Reports", "Reports"),
+            ("Database", "Database"),
+            ("Settings", "Settings"),
+            ("Diagnostics", "Diagnostics")
+        ]
 
-        self.refresh_button = ttk.Button(
-            controls,
-            text="Refresh",
-            command=self.start_scan
-        )
+        for label, nav_id in nav_items:
+            btn = ttk.Button(sidebar, text=label, command=lambda n=nav_id: self.navigate_to(n), width=18)
+            btn.pack(anchor="w", pady=3)
+            self.nav_buttons[nav_id] = btn
+
+        # Simulation Mode Indicator
+        self.sim_indicator_var = tk.StringVar(value="")
+        self.sim_lbl = ttk.Label(sidebar, textvariable=self.sim_indicator_var, font=("Segoe UI", 8, "bold"), foreground="#E67E22")
+        self.sim_lbl.pack(anchor="w", pady=(20, 0))
+
+        # ==========================================
+        # 2. MAIN CONTENT AREA (RIGHT CONTAINER)
+        # ==========================================
+        self.content_container = ttk.Frame(self.root, padding=10)
+        self.content_container.grid(row=0, column=1, sticky="nsew")
+        self.content_container.rowconfigure(0, weight=1)
+        self.content_container.columnconfigure(0, weight=1)
+
+        # Instantiate View Frames
+        self.views: Dict[str, ttk.Frame] = {}
+
+        self.views["Dashboard"] = DashboardView(self.content_container, self.db, on_navigate=self.navigate_to)
+        self.views["Live Scanner"] = self._create_live_scanner_view()
+        self.views["Security Monitor"] = self._create_monitor_embed_view()
+        self.views["Events"] = EventsWindow(self.content_container, self.db)
+        self.views["Analytics"] = AnalyticsWindow(self.content_container)
+        self.views["Baseline"] = BaselineWindow(self.content_container, self.db)
+        self.views["Reports"] = ReportsWindow(self.content_container, self.db)
+        self.views["Database"] = DatabaseWindow(self.content_container, self.db)
+        self.views["Settings"] = SettingsWindow(self.content_container, self.config_mgr)
+        self.views["Diagnostics"] = DiagnosticsWindow(self.content_container, self.db)
+
+        # Show initial view
+        self.navigate_to("Dashboard")
+
+    # ---------------------------------------------------------
+    # NAVIGATION CONTROLLER
+    # ---------------------------------------------------------
+
+    def navigate_to(self, nav_id: str):
+        if nav_id not in self.views:
+            return
+
+        self.active_nav = nav_id
+        for v in self.views.values():
+            v.grid_forget()
+
+        view_frame = self.views[nav_id]
+        view_frame.grid(row=0, column=0, sticky="nsew")
+
+        # Push networks update to views if supported
+        if hasattr(view_frame, "update_networks"):
+            view_frame.update_networks(self.networks)
+
+        # Check simulation mode state
+        if self.config_mgr.get("simulation_mode", False):
+            self.sim_indicator_var.set("[ DEMO / SIMULATION MODE ]")
+        else:
+            self.sim_indicator_var.set("")
+
+    # ---------------------------------------------------------
+    # LIVE SCANNER VIEW CREATION
+    # ---------------------------------------------------------
+
+    def _create_live_scanner_view(self) -> ttk.Frame:
+        view = ttk.Frame(self.content_container)
+        view.rowconfigure(3, weight=1)
+        view.columnconfigure(0, weight=1)
+
+        # Header
+        hdr = ttk.Frame(view, padding=(0, 5))
+        hdr.grid(row=0, column=0, sticky="ew")
+
+        ttk.Label(hdr, text="Passive Live Wi-Fi Network Discovery", font=("Segoe UI", 14, "bold")).pack(anchor="w")
+
+        # Control Bar
+        ctrl = ttk.Frame(view, padding=(0, 5))
+        ctrl.grid(row=1, column=0, sticky="ew")
+
+        self.scan_button = ttk.Button(ctrl, text="Scan Networks", command=self.start_scan)
+        self.scan_button.pack(side="left", padx=(0, 5))
+
+        self.refresh_button = ttk.Button(ctrl, text="Refresh", command=self.start_scan)
         self.refresh_button.pack(side="left", padx=5)
 
         self.auto_refresh_var = tk.BooleanVar(value=False)
-        auto_refresh_cb = ttk.Checkbutton(
-            controls,
-            text="Auto Refresh (30s)",
-            variable=self.auto_refresh_var,
-            command=self.toggle_auto_refresh
-        )
-        auto_refresh_cb.pack(side="left", padx=15)
+        self.auto_refresh_cb = ttk.Checkbutton(ctrl, text="Auto Refresh (30s)", variable=self.auto_refresh_var, command=self.toggle_auto_refresh)
+        self.auto_refresh_cb.pack(side="left", padx=(10, 15))
 
-        # Search Bar
-        ttk.Label(controls, text="Search:").pack(side="left", padx=(20, 5))
+        ttk.Label(ctrl, text="Search:").pack(side="left", padx=(10, 4))
         self.search_var = tk.StringVar()
         self.search_var.trace_add("write", self.on_search)
-        search_entry = ttk.Entry(controls, textvariable=self.search_var, width=22)
-        search_entry.pack(side="left")
+        ttk.Entry(ctrl, textvariable=self.search_var, width=18).pack(side="left")
 
-        # Sort Dropdown
-        ttk.Label(controls, text="Sort:").pack(side="left", padx=(20, 5))
+        ttk.Label(ctrl, text="Sort:").pack(side="left", padx=(15, 4))
         self.sort_var = tk.StringVar(value="Signal")
-        sort_box = ttk.Combobox(
-            controls,
-            textvariable=self.sort_var,
-            values=["Signal", "SSID", "Channel", "Security"],
-            state="readonly",
-            width=12
-        )
+        sort_box = ttk.Combobox(ctrl, textvariable=self.sort_var, values=["Signal", "SSID", "Channel", "Security", "Risk", "Band"], state="readonly", width=10)
         sort_box.pack(side="left")
         sort_box.bind("<<ComboboxSelected>>", self.on_sort)
 
-        # Status Indicator
-        self.status_var = tk.StringVar(value="Ready")
-        status_label = ttk.Label(
-            controls,
-            textvariable=self.status_var,
-            font=("Segoe UI", 9, "italic")
-        )
-        status_label.pack(side="right", padx=(10, 0))
+        meta_right = ttk.Frame(ctrl)
+        meta_right.pack(side="right")
 
-        # Statistics Bar
-        stats_frame = ttk.Frame(self.root, padding=(15, 8))
-        stats_frame.pack(fill="x")
+        self.status_var = tk.StringVar(value="Status: Ready")
+        self.status_label = ttk.Label(meta_right, textvariable=self.status_var, font=("Segoe UI", 9, "bold"), foreground="#2E86C1")
+        self.status_label.pack(anchor="e")
 
-        self.total_var = tk.StringVar(value="Networks: 0")
-        self.secure_var = tk.StringVar(value="WPA2/WPA3: 0")
-        self.open_var = tk.StringVar(value="Open: 0")
-        self.channel_var = tk.StringVar(value="Channels: 0")
+        self.metadata_var = tk.StringVar(value="Last Scan: Never | Duration: 0.00s")
+        ttk.Label(meta_right, textvariable=self.metadata_var, font=("Segoe UI", 8, "italic"), foreground="#777777").pack(anchor="e")
 
-        ttk.Label(stats_frame, textvariable=self.total_var, style="Stat.TLabel").pack(side="left", padx=(0, 25))
-        ttk.Label(stats_frame, textvariable=self.secure_var, style="Stat.TLabel").pack(side="left", padx=25)
-        ttk.Label(stats_frame, textvariable=self.open_var, style="Stat.TLabel").pack(side="left", padx=25)
-        ttk.Label(stats_frame, textvariable=self.channel_var, style="Stat.TLabel").pack(side="left", padx=25)
+        # Adapter Card Panel
+        panels = ttk.Frame(view, padding=(0, 5))
+        panels.grid(row=2, column=0, sticky="ew")
 
-        # Network Table (Treeview)
-        table_frame = ttk.Frame(self.root, padding=(15, 5))
-        table_frame.pack(fill="both", expand=True)
+        adapter_card = ttk.LabelFrame(panels, text=" WLAN Adapter Information ", padding=8)
+        adapter_card.pack(fill="x")
 
-        columns = (
-            "ssid", "bssid", "signal", "rssi",
-            "channel", "frequency", "security",
-            "encryption", "radio", "risk"
-        )
+        self.adapter_name_var = tk.StringVar(value="Interface: Unknown")
+        self.adapter_state_var = tk.StringVar(value="State: Unknown")
+        self.adapter_ssid_var = tk.StringVar(value="Connected SSID: N/A")
 
-        self.table = ttk.Treeview(
-            table_frame,
-            columns=columns,
-            show="headings",
-            selectmode="browse"
-        )
+        ttk.Label(adapter_card, textvariable=self.adapter_name_var, font=("Segoe UI", 9, "bold")).pack(side="left", padx=10)
+        ttk.Label(adapter_card, textvariable=self.adapter_state_var, font=("Segoe UI", 9)).pack(side="left", padx=10)
+        ttk.Label(adapter_card, textvariable=self.adapter_ssid_var, font=("Segoe UI", 9)).pack(side="left", padx=10)
+
+        # Table Frame
+        tbl_frame = ttk.Frame(view, padding=(0, 5))
+        tbl_frame.grid(row=3, column=0, sticky="nsew")
+        tbl_frame.rowconfigure(0, weight=1)
+        tbl_frame.columnconfigure(0, weight=1)
+
+        columns = ("ssid", "bssid", "vendor", "signal", "rssi", "channel", "band", "security", "encryption", "radio", "risk")
+        self.table = ttk.Treeview(tbl_frame, columns=columns, show="headings", selectmode="browse")
 
         headings = {
-            "ssid": "SSID",
-            "bssid": "BSSID",
-            "signal": "Signal",
-            "rssi": "Estimated RSSI",
-            "channel": "Channel",
-            "frequency": "Frequency",
-            "security": "Security",
-            "encryption": "Encryption",
-            "radio": "Radio Type",
-            "risk": "Risk Level"
+            "ssid": "SSID", "bssid": "BSSID", "vendor": "Vendor", "signal": "Signal", "rssi": "Estimated RSSI",
+            "channel": "Channel", "band": "Band", "security": "Security", "encryption": "Encryption",
+            "radio": "Radio Standard", "risk": "Risk Level"
         }
-
         widths = {
-            "ssid": 180,
-            "bssid": 140,
-            "signal": 75,
-            "rssi": 105,
-            "channel": 75,
-            "frequency": 95,
-            "security": 95,
-            "encryption": 95,
-            "radio": 95,
-            "risk": 95
+            "ssid": 170, "bssid": 130, "vendor": 130, "signal": 70, "rssi": 100,
+            "channel": 65, "band": 80, "security": 90, "encryption": 90, "radio": 90, "risk": 90
         }
 
         for col in columns:
             self.table.heading(col, text=headings[col])
             self.table.column(col, width=widths[col], anchor="center" if col != "ssid" else "w")
 
-        v_scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.table.yview)
-        h_scrollbar = ttk.Scrollbar(table_frame, orient="horizontal", command=self.table.xview)
-        self.table.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        for tag, kwargs in self.table_tags.items():
+            self.table.tag_configure(tag, **kwargs)
+
+        v_sb = ttk.Scrollbar(tbl_frame, orient="vertical", command=self.table.yview)
+        h_sb = ttk.Scrollbar(tbl_frame, orient="horizontal", command=self.table.xview)
+        self.table.configure(yscrollcommand=v_sb.set, xscrollcommand=h_sb.set)
 
         self.table.grid(row=0, column=0, sticky="nsew")
-        v_scrollbar.grid(row=0, column=1, sticky="ns")
-        h_scrollbar.grid(row=1, column=0, sticky="ew")
+        v_sb.grid(row=0, column=1, sticky="ns")
+        h_sb.grid(row=1, column=0, sticky="ew")
 
-        table_frame.rowconfigure(0, weight=1)
-        table_frame.columnconfigure(0, weight=1)
-
-        # Bind double-click event
         self.table.bind("<Double-1>", self.show_network_details)
 
         # Bottom Controls
-        bottom_frame = ttk.Frame(self.root, padding=(15, 12))
-        bottom_frame.pack(fill="x")
+        btm = ttk.Frame(view, padding=(0, 5))
+        btm.grid(row=4, column=0, sticky="ew")
 
-        ttk.Button(
-            bottom_frame,
-            text="Network Details",
-            command=self.show_network_details
-        ).pack(side="left", padx=(0, 8))
+        ttk.Button(btm, text="Network Details", command=self.show_network_details).pack(side="left", padx=(0, 5))
+        ttk.Button(btm, text="Export CSV", command=self.export_csv).pack(side="right")
 
-        ttk.Button(
-            bottom_frame,
-            text="Channel Analysis",
-            command=self.show_channel_analysis
-        ).pack(side="left", padx=5)
+        return view
 
-        ttk.Button(
-            bottom_frame,
-            text="Export CSV",
-            command=self.export_csv
-        ).pack(side="right", padx=(5, 0))
+    def _create_monitor_embed_view(self) -> ttk.Frame:
+        view = ttk.Frame(self.content_container, padding=20)
+        ttk.Label(view, text="Security Monitoring Center", font=("Segoe UI", 16, "bold")).pack(anchor="w", pady=(0, 15))
+
+        card = ttk.LabelFrame(view, text=" Real-Time Monitoring Subsystem ", padding=15)
+        card.pack(fill="x", pady=10)
+
+        ttk.Label(card, text="The passive monitoring subsystem tracks background scan iterations, compares network state transitions (ACTIVE -> TEMPORARILY_MISSING -> NOT_DETECTED), detects security configuration downgrades, and logs security events to SQLite.", font=("Segoe UI", 9), wraplength=700).pack(anchor="w", pady=(0, 10))
+
+        ttk.Button(card, text="Open Standalone Security Monitor Window", command=self.open_security_monitor).pack(anchor="w")
+
+        return view
 
     # ---------------------------------------------------------
-    # BACKGROUND SCANNING LOGIC
+    # ADAPTER PANEL & SCAN PIPELINE
     # ---------------------------------------------------------
+
+    def update_adapter_panel(self):
+        try:
+            info = self.scanner_mgr.get_interface_info()
+            self.adapter_info = info
+            self.adapter_name_var.set(f"Interface: {info.get('name', 'Unknown')}")
+            self.adapter_state_var.set(f"State: {info.get('state', 'Unknown')}")
+            self.adapter_ssid_var.set(f"Connected SSID: {info.get('ssid', 'Not Connected')}")
+        except Exception as err:
+            logger.warning("Error updating adapter panel: %s", err)
 
     def start_scan(self):
         if self.is_scanning:
-            logger.debug("Scan already in progress. Ignoring request.")
             return
 
         self.is_scanning = True
         self.scan_button.config(state="disabled")
         self.refresh_button.config(state="disabled")
-        self.status_var.set("Scanning...")
+        self.status_var.set("Status: Scanning...")
+        self.status_label.config(foreground="#E67E22")
 
-        logger.info("Initiating background scan thread...")
         thread = threading.Thread(target=self._perform_scan_thread, daemon=True)
         thread.start()
 
     def _perform_scan_thread(self):
+        start_time = time.time()
         try:
-            raw_data = self.scanner.scan()
-            networks = parse_networks(raw_data)
-            self.root.after(0, lambda: self._scan_completed(networks))
-        except Exception as error:
-            logger.exception("Background scan encountered error: %s", error)
-            self.root.after(0, lambda: self._scan_failed(str(error)))
+            if self.config_mgr.get("simulation_mode", False):
+                networks = self.sim_mgr.generate_simulated_networks()
+            else:
+                raw_data = self.scanner_mgr.scan()
+                networks = parse_networks(raw_data)
 
-    def _scan_completed(self, networks: List[Network]):
+            # Assign OUI vendor names
+            for net in networks:
+                net.vendor = lookup_vendor(net.bssid)
+
+            duration = time.time() - start_time
+            self.root.after(0, lambda: self._scan_completed(networks, duration))
+        except Exception as error:
+            duration = time.time() - start_time
+            self.root.after(0, lambda: self._scan_failed(str(error), duration))
+
+    def _scan_completed(self, networks: List[Network], duration: float):
         self.networks = networks
         self.is_scanning = False
 
@@ -250,29 +365,51 @@ class MainWindow:
         self.refresh_button.config(state="normal")
 
         count = len(networks)
-        self.status_var.set(f"Scan complete — {count} network(s) found")
-        logger.info("Scan completed successfully. Found %d network(s).", count)
+        self.status_var.set(f"Status: Scan completed — {count} network(s) found")
+        self.status_label.config(foreground="#27AE60")
 
-        self.update_statistics()
+        self.last_scan_time = datetime.now().strftime("%H:%M:%S")
+        self.last_scan_duration = duration
+        self.metadata_var.set(f"Last Scan: {self.last_scan_time} | Duration: {duration:.2f}s")
+
+        # Execute Monitoring Pipeline
+        try:
+            timestamp_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.pipeline.process_scan_results(networks, duration, timestamp_now)
+        except Exception as err:
+            logger.error("Error executing monitoring pipeline: %s", err)
+
+        # Notify active view
+        curr_view = self.views.get(self.active_nav)
+        if hasattr(curr_view, "update_networks"):
+            curr_view.update_networks(networks)
+
+        # Refresh dashboard
+        if "Dashboard" in self.views and hasattr(self.views["Dashboard"], "update_networks"):
+            self.views["Dashboard"].update_networks(networks)
+
+        self.update_adapter_panel()
         self.refresh_table()
 
-    def _scan_failed(self, error_message: str):
+    def _scan_failed(self, error_message: str, duration: float):
         self.is_scanning = False
         self.scan_button.config(state="normal")
         self.refresh_button.config(state="normal")
-        self.status_var.set("Scan failed")
-        logger.error("Scan failed: %s", error_message)
 
-        messagebox.showerror(
-            "Scan Error",
-            f"Failed to scan Wi-Fi networks:\n\n{error_message}"
-        )
+        short_reason = error_message.splitlines()[0] if error_message else "Unknown error"
+        self.status_var.set(f"Status: Scan failed — {short_reason}")
+        self.status_label.config(foreground="#C0392B")
+
+        messagebox.showerror("Scan Error", f"Failed to scan wireless networks:\n\n{error_message}")
 
     # ---------------------------------------------------------
-    # TABLE REFRESH & FILTER / SORT
+    # TABLE REFRESH & SEARCH
     # ---------------------------------------------------------
 
     def refresh_table(self):
+        if not hasattr(self, "table"):
+            return
+
         for item in self.table.get_children():
             self.table.delete(item)
 
@@ -281,6 +418,7 @@ class MainWindow:
         for net in filtered:
             rssi_text = f"{net.signal_dbm} dBm" if net.signal_dbm is not None else "Unknown"
             channel_text = str(net.channel) if net.channel is not None else "Unknown"
+            risk = net.risk_level()
 
             self.table.insert(
                 "",
@@ -288,15 +426,17 @@ class MainWindow:
                 values=(
                     net.ssid,
                     net.bssid,
+                    net.vendor,
                     f"{net.signal_percent}%",
                     rssi_text,
                     channel_text,
-                    net.frequency,
+                    net.band,
                     net.security,
                     net.encryption,
                     net.radio_type,
-                    net.risk_level()
-                )
+                    risk
+                ),
+                tags=(risk,)
             )
 
     def get_filtered_networks(self) -> List[Network]:
@@ -309,10 +449,12 @@ class MainWindow:
                 if query in n.ssid.lower()
                 or query in n.bssid.lower()
                 or query in n.security.lower()
+                or query in n.encryption.lower()
+                or query in n.band.lower()
+                or (n.channel is not None and query in str(n.channel))
             ]
 
         sort_key = self.sort_var.get()
-
         if sort_key == "Signal":
             result.sort(key=lambda n: n.signal_percent, reverse=True)
         elif sort_key == "SSID":
@@ -320,15 +462,14 @@ class MainWindow:
         elif sort_key == "Channel":
             result.sort(key=lambda n: (n.channel if n.channel is not None else 999))
         elif sort_key == "Security":
-            sec_order = {
-                "WPA3": 1,
-                "WPA2": 2,
-                "WPA": 3,
-                "WEP": 4,
-                "OPEN": 5,
-                "UNKNOWN": 6
-            }
+            sec_order = {"WPA3": 1, "WPA2": 2, "WPA": 3, "WEP": 4, "OPEN": 5, "UNKNOWN": 6}
             result.sort(key=lambda n: sec_order.get(n.security.upper(), 99))
+        elif sort_key == "Risk":
+            risk_order = {"CRITICAL": 1, "HIGH": 2, "MEDIUM": 3, "LOW": 4, "UNKNOWN": 5}
+            result.sort(key=lambda n: risk_order.get(n.risk_level(), 99))
+        elif sort_key == "Band":
+            band_order = {"2.4 GHz": 1, "5 GHz": 2, "Unknown": 3}
+            result.sort(key=lambda n: band_order.get(n.band, 99))
 
         return result
 
@@ -338,126 +479,36 @@ class MainWindow:
     def on_sort(self, event=None):
         self.refresh_table()
 
-    # ---------------------------------------------------------
-    # STATISTICS UPDATE
-    # ---------------------------------------------------------
-
-    def update_statistics(self):
-        total = len(self.networks)
-        secure_count = sum(1 for n in self.networks if n.security.upper() in ("WPA2", "WPA3"))
-        open_count = sum(1 for n in self.networks if n.security.upper() == "OPEN")
-        channels_count = len(set(n.channel for n in self.networks if n.channel is not None))
-
-        self.total_var.set(f"Networks: {total}")
-        self.secure_var.set(f"WPA2/WPA3: {secure_count}")
-        self.open_var.set(f"Open: {open_count}")
-        self.channel_var.set(f"Channels: {channels_count}")
-
-    # ---------------------------------------------------------
-    # DIALOG ACTIONS
-    # ---------------------------------------------------------
-
     def show_network_details(self, event=None):
-        selected_items = self.table.selection()
-        if not selected_items:
-            messagebox.showinfo("Network Details", "Select a network first.")
+        selected = self.table.selection()
+        if not selected:
+            messagebox.showinfo("Network Details", "Please select a network from the table first.")
             return
 
-        item = selected_items[0]
-        values = self.table.item(item, "values")
-        selected_bssid = values[1]
+        bssid = self.table.item(selected[0], "values")[1]
+        network = next((n for n in self.networks if n.bssid == bssid), None)
+        if network:
+            NetworkDetailsModal(self.root, network, self.db)
 
-        network = next((n for n in self.networks if n.bssid == selected_bssid), None)
-        if network is None:
-            messagebox.showerror("Error", "Selected network details could not be found.")
-            return
-
-        assessment = analyze_security(network.security)
-
-        details_msg = (
-            f"SSID: {network.ssid}\n\n"
-            f"BSSID: {network.bssid}\n\n"
-            f"Signal: {network.signal_percent}%\n\n"
-            f"Estimated RSSI: {network.signal_dbm} dBm\n\n"
-            f"Channel: {network.channel if network.channel is not None else 'Unknown'}\n\n"
-            f"Frequency: {network.frequency}\n\n"
-            f"Security: {network.security}\n\n"
-            f"Encryption: {network.encryption}\n\n"
-            f"Radio Type: {network.radio_type}\n\n"
-            f"Heuristic Security Score: {assessment['score']}/100\n\n"
-            f"Risk Level: {assessment['level']}\n\n"
-            f"Assessment:\n{assessment['description']}"
-        )
-
-        messagebox.showinfo(f"Network Details - {network.ssid}", details_msg)
-
-    def show_channel_analysis(self):
-        if not self.networks:
-            messagebox.showinfo("Channel Analysis", "Perform a scan first.")
-            return
-
-        channel_counts = {}
-        for net in self.networks:
-            if net.channel is not None:
-                channel_counts[net.channel] = channel_counts.get(net.channel, 0) + 1
-
-        if not channel_counts:
-            messagebox.showinfo("Channel Analysis", "No channel information available.")
-            return
-
-        lines = ["CHANNEL ANALYSIS", ""]
-        for ch in sorted(channel_counts.keys()):
-            cnt = channel_counts[ch]
-            warning_tag = "  <-- HIGH CONGESTION" if cnt >= 4 else ""
-            lines.append(f"Channel {ch}: {cnt} network(s){warning_tag}")
-
-        messagebox.showinfo("Channel Analysis", "\n".join(lines))
+    def open_security_monitor(self):
+        if self.monitoring_win and self.monitoring_win.win.winfo_exists():
+            self.monitoring_win.win.lift()
+            self.monitoring_win.refresh_dashboard()
+        else:
+            self.monitoring_win = MonitoringWindow(self.root, self.db, self.event_mgr)
 
     def export_csv(self):
         if not self.networks:
-            messagebox.showinfo("Export", "Perform a scan first.")
+            messagebox.showinfo("Export", "Please perform a scan first.")
             return
 
-        filename = filedialog.asksaveasfilename(
-            title="Save Wi-Fi Scan Results",
-            defaultextension=".csv",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
-        )
-
-        if not filename:
-            return
-
-        try:
+        filename = filedialog.asksaveasfilename(title="Save CSV", defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+        if filename:
             export_networks(self.networks, filename)
-            logger.info("Exported scan results to: %s", filename)
-            messagebox.showinfo("Export Successful", f"Scan results exported successfully to:\n{filename}")
-        except Exception as error:
-            logger.error("Export CSV failed: %s", error)
-            messagebox.showerror("Export Error", f"Failed to export CSV file:\n{error}")
-
-    # ---------------------------------------------------------
-    # AUTO REFRESH SCHEDULER
-    # ---------------------------------------------------------
+            messagebox.showinfo("Success", "Scan results exported successfully.")
 
     def toggle_auto_refresh(self):
-        self.auto_refresh_enabled = self.auto_refresh_var.get()
-        logger.info("Auto Refresh toggled: %s", self.auto_refresh_enabled)
-
-        if self.auto_refresh_timer_id is not None:
-            self.root.after_cancel(self.auto_refresh_timer_id)
-            self.auto_refresh_timer_id = None
-
-        if self.auto_refresh_enabled:
-            self._schedule_auto_refresh()
-
-    def _schedule_auto_refresh(self):
-        if not self.auto_refresh_enabled:
-            return
-
-        if not self.is_scanning:
-            self.start_scan()
-
-        self.auto_refresh_timer_id = self.root.after(
-            self.refresh_interval_sec * 1000,
-            self._schedule_auto_refresh
-        )
+        if self.auto_refresh_var.get():
+            self.scheduler.start()
+        else:
+            self.scheduler.pause()

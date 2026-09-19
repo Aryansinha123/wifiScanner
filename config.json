@@ -1,0 +1,11 @@
+{
+  "scan_interval_sec": 30,
+  "missing_scan_threshold": 3,
+  "signal_change_threshold": 20,
+  "auto_monitoring": false,
+  "db_path": "data/wifi_scanner.db",
+  "reports_dir": "data/reports",
+  "exports_dir": "data/exports",
+  "simulation_mode": false,
+  "theme": "cybersecurity_dark"
+}

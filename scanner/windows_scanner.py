@@ -1,5 +1,7 @@
 import logging
 import subprocess
+from typing import Dict, Any
+from utils.parser import parse_interface
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +37,27 @@ class WindowsScanner:
             raise RuntimeError(f"Unable to access wireless interfaces: {stderr_msg}")
 
         return result.stdout
+
+    def get_interface_info(self) -> Dict[str, Any]:
+        """
+        Retrieves and parses current wireless adapter status.
+        """
+        try:
+            raw = self.get_interfaces()
+            return parse_interface(raw)
+        except Exception as err:
+            logger.warning("Failed to retrieve parsed adapter info: %s", err)
+            return {
+                "name": "Unknown",
+                "description": "Unknown",
+                "state": "Unavailable",
+                "ssid": "N/A",
+                "bssid": "N/A",
+                "channel": None,
+                "signal_percent": None,
+                "radio_type": "Unknown",
+                "band": "Unknown"
+            }
 
     def scan(self) -> str:
         """

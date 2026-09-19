@@ -1,11 +1,12 @@
 import platform
+from typing import Dict, Any
 from scanner.windows_scanner import WindowsScanner
 
 
 class ScannerManager:
     """
     Interface manager for OS-specific Wi-Fi scanners.
-    Phase 1 supports Windows.
+    Phase 1.5 supports Windows.
     """
 
     def __init__(self):
@@ -26,6 +27,12 @@ class ScannerManager:
 
     def get_interfaces(self) -> str:
         """
-        Queries wireless interface status.
+        Queries wireless interface status raw text.
         """
         return self.scanner.get_interfaces()
+
+    def get_interface_info(self) -> Dict[str, Any]:
+        """
+        Queries parsed wireless interface status information.
+        """
+        return self.scanner.get_interface_info()

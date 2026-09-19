@@ -11,9 +11,11 @@ def export_networks(networks: List[Network], filename: Optional[str] = None) -> 
     """
     Exports list of Network objects to a CSV file.
     """
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     if filename is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"wifi_scan_{timestamp}.csv"
+        timestamp_file = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"wifi_scan_{timestamp_file}.csv"
 
     logger.info("Exporting %d network(s) to CSV file: %s", len(networks), filename)
 
@@ -22,29 +24,33 @@ def export_networks(networks: List[Network], filename: Optional[str] = None) -> 
             writer = csv.writer(file)
 
             writer.writerow([
+                "Timestamp",
                 "SSID",
                 "BSSID",
                 "Signal (%)",
                 "Estimated RSSI (dBm)",
                 "Channel",
-                "Frequency",
+                "Band",
                 "Security",
                 "Encryption",
                 "Radio Type",
-                "Risk"
+                "Security Score",
+                "Risk Level"
             ])
 
             for network in networks:
                 writer.writerow([
+                    now_str,
                     network.ssid,
                     network.bssid,
                     network.signal_percent,
                     network.signal_dbm if network.signal_dbm is not None else "Unknown",
                     network.channel if network.channel is not None else "Unknown",
-                    network.frequency,
+                    network.band,
                     network.security,
                     network.encryption,
                     network.radio_type,
+                    network.security_score(),
                     network.risk_level()
                 ])
 

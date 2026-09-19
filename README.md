@@ -1,160 +1,115 @@
-# Wi-Fi Network Security Scanner
+# Wi-Fi Security Intelligence & Monitoring Platform
 
-A defensive, passive Wi-Fi network discovery and security information tool for Windows.
+A defensive, feature-rich Wi-Fi security monitoring and wireless-environment intelligence platform built in Python 3.11+, SQLite 3, and Tkinter/ttk.
 
-## Project Description
-
-The **Wi-Fi Network Security Scanner** is a desktop application designed for network administrators, cybersecurity enthusiasts, and security researchers. It passively scans nearby wireless access points using built-in Windows WLAN CLI functionality (`netsh`), extracts key network parameters (SSID, BSSID, Signal, Estimated RSSI, Channel, Frequency Band, Security Type, Encryption, Radio Type), calculates a heuristic security assessment, and displays the results in a responsive Tkinter GUI.
-
-> **IMPORTANT DEFENSIVE DIRECTIVE**:
-> This application performs **PASSIVE DISCOVERY ONLY**. It does not perform packet injection, deauthentication attacks, handshake capturing, password cracking, or unauthorized network connection attempts. It strictly analyzes wireless information exposed by the operating system.
+![Defensive Scope](https://img.shields.io/badge/Scope-100%25%20Passive%20%26%20Defensive-blue)
+![Python Version](https://img.shields.io/badge/Python-3.11%2B-green)
+![Database](https://img.shields.io/badge/Storage-SQLite3-sqlite)
+![License](https://img.shields.io/badge/License-MIT-brightgreen)
 
 ---
 
 ## Key Features
 
-- **Wireless Adapter Querying**: Queries active wireless interfaces via `netsh wlan show interfaces`.
-- **Passive Network Discovery**: Scans surrounding Wi-Fi networks and BSSIDs via `netsh wlan show networks mode=bssid`.
-- **Comprehensive Metadata Extraction**:
-  - SSID (including support for Hidden SSIDs)
-  - BSSID (MAC address of each Access Point)
-  - Signal percentage (%) and Estimated RSSI (dBm)
-  - Channel and Frequency Band (2.4 GHz, 5 GHz, Unknown)
-  - Normalized Authentication (WPA3, WPA2, WPA, WEP, OPEN, UNKNOWN)
-  - Encryption type (CCMP, AES, TKIP, None)
-  - Radio Type (802.11n, 802.11ac, 802.11ax, etc.)
-- **Heuristic Security Score**: Assesses wireless authentication strength (Score 0-100, Risk: LOW, MEDIUM, HIGH, CRITICAL, UNKNOWN).
-- **Responsive GUI**: Multithreaded architecture keeps the Tkinter GUI fluid during active scans.
-- **Search & Filter**: Real-time filtering by SSID, BSSID, or Security protocol.
-- **Multi-Column Sorting**: Sort networks by Signal strength, SSID, Channel number, or Security risk.
-- **Detailed Inspection**: Inspect individual network details and assessment breakdown.
-- **Channel Analysis**: View access point density per channel and flag high congestion (>= 4 APs).
-- **CSV Export**: Export complete scan findings to CSV files.
-- **Auto Refresh**: Optional 30-second periodic background refresh without UI blocking.
+- **Passive Wi-Fi Discovery**: Scans 2.4 GHz and 5 GHz wireless networks using Windows WLAN APIs (`netsh wlan show networks mode=bssid`).
+- **Multi-Factor Heuristic Risk Engine**: Calculates explainable 0–100 risk scores and risk levels (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) based on protocol, cipher strength, security changes, and behavioral anomalies.
+- **Three-State Network Lifecycle Tracking**: Tracks BSSID states (`ACTIVE`, `TEMPORARILY_MISSING`, `NOT_DETECTED`) with threshold debouncing (default: 3 scans).
+- **Environment Baseline System**: Snapshot expected wireless environments and receive `BASELINE_DEVIATION` alerts when unseen networks or configuration shifts occur.
+- **Passive Anomaly Detection Engine**: Detects 8 observation anomaly patterns (security downgrades, channel shifts, signal fluctuations, baseline deviations) with explainable evidence.
+- **Offline MAC OUI Vendor Lookup**: Resolves network hardware vendors locally using an embedded IEEE OUI database.
+- **Channel & Signal Intelligence**: Evaluates channel density, 2.4 GHz vs 5 GHz distribution, RSSI estimations, and signal statistics.
+- **Executive Security Reports**: Generates styled HTML executive reports, CSV data exports, and JSON archives.
+- **Database Management & Migrations**: Automated SQLite schema migrations, timestamped database backups, and safe restore controls.
+- **Offline Simulation & Demo Mode**: Test security monitoring scenarios (new networks, security downgrades, channel hops) without physical Wi-Fi changes.
+- **Modern Sidebar GUI**: Intuitive navigation connecting Dashboard, Live Scanner, Security Monitor, History, Events, Analytics, Baseline, Reports, Database, Settings, and Diagnostics.
 
 ---
 
-## Technology Stack
+## Security Scope & Philosophy
 
-- **Python 3.11+**
-- **GUI Framework**: Tkinter / `tkinter.ttk`
-- **Standard Library Modules**: `subprocess`, `threading`, `dataclasses`, `csv`, `re`, `logging`, `datetime`, `unittest`
-- **Zero Third-Party Dependencies** (No Scapy, PyWiFi, or external C bindings required for Phase 1).
+This is a **DEFENSIVE and PASSIVE** monitoring application.
 
----
+### The application MAY:
+- Discover nearby Wi-Fi networks using normal OS WLAN scanning.
+- Analyze wireless configurations and signal behavior.
+- Maintain historical records and detect anomalies.
+- Generate security assessments and reports.
 
-## Project Structure
-
-```
-wifi-network-scanner/
-│
-├── main.py                    # Application entry point
-├── requirements.txt           # Standard library documentation
-├── README.md                  # Project documentation
-│
-├── models/
-│   ├── __init__.py
-│   └── network.py             # Network dataclass data model
-│
-├── scanner/
-│   ├── __init__.py
-│   ├── windows_scanner.py     # Executes Windows netsh commands
-│   └── scanner_manager.py     # OS scanner abstraction manager
-│
-├── utils/
-│   ├── __init__.py
-│   └── parser.py              # Parses netsh raw output into Network objects
-│
-├── security/
-│   ├── __init__.py
-│   └── analyzer.py            # Security heuristic scoring engine
-│
-├── storage/
-│   ├── __init__.py
-│   └── csv_export.py          # CSV export handler
-│
-├── gui/
-│   ├── __init__.py
-│   └── main_window.py         # Tkinter desktop GUI implementation
-│
-└── tests/
-    ├── __init__.py
-    ├── test_parser.py         # Unit tests for parser
-    └── test_analyzer.py       # Unit tests for security analyzer
-```
+### The application MUST NOT:
+- Perform deauthentication or packet injection.
+- Capture WPA handshakes or crack passwords.
+- Attempt unauthorized authentication or automatic connections.
+- Intercept traffic or perform offensive operations.
 
 ---
 
 ## Installation & Setup
 
-### Prerequisites
-
-- Windows 10 / 11 Operating System
-- Wi-Fi adapter installed and enabled
-- Python 3.11 or higher installed and available on system PATH
-
-### Virtual Environment Setup
-
-Open PowerShell or Command Prompt in the project directory:
-
-```powershell
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows PowerShell:
-.\venv\Scripts\Activate.ps1
-
-# Windows CMD:
-venv\Scripts\activate.bat
-```
-
-### Running the Application
-
-Launch the desktop scanner:
-
-```powershell
-python main.py
-```
-
----
-
-## How Wi-Fi Scanning Works
-
-1. **Interface Check**: The application queries active wireless interfaces using:
-   ```cmd
-   netsh wlan show interfaces
+1. **Prerequisites**: Windows 10/11, Python 3.11+
+2. **Clone / Navigate**:
+   ```bash
+   cd WifiScanner
    ```
-2. **Network Discovery**: Surrounding networks and their associated BSSIDs are retrieved via:
-   ```cmd
-   netsh wlan show networks mode=bssid
+3. **Run Application**:
+   ```bash
+   python main.py
    ```
-3. **Regex Extraction**: Raw output is parsed line-by-line using regular expressions to support variable indentation and formatting.
-4. **Signal to RSSI Estimation**: Windows reports signal strength as a percentage (0-100%). Estimated RSSI is calculated using the standard approximation:
-   $$\text{Estimated RSSI (dBm)} = -100 + (\text{Signal Percent} \times 0.5)$$
+4. **Run Test Suite**:
+   ```bash
+   python -m unittest discover tests
+   ```
 
 ---
 
-## Unit Testing
+## Architecture Overview
 
-Run the unit test suite using Python's `unittest` module:
-
-```powershell
-python -m unittest discover tests
+```
+wifi-security-platform/
+├── main.py
+├── config.json
+├── data/
+│   ├── wifi_scanner.db
+│   ├── backups/
+│   └── reports/
+├── models/
+│   ├── network.py, scan.py, event.py, observation.py, baseline.py, anomaly.py
+├── scanner/
+│   ├── windows_scanner.py, scanner_manager.py, adapter_manager.py, scan_scheduler.py
+├── parser/
+│   ├── netsh_parser.py, normalizer.py, validators.py
+├── storage/
+│   ├── database.py, repositories.py, migrations.py, backup.py
+├── security/
+│   ├── analyzer.py, risk_engine.py, security_rules.py, configuration_analyzer.py
+├── monitoring/
+│   ├── change_detector.py, state_manager.py, event_manager.py, baseline_manager.py, scheduler.py
+├── analytics/
+│   ├── channel_analyzer.py, signal_analyzer.py, anomaly_detector.py
+├── intelligence/
+│   ├── bssid_analyzer.py, ssid_analyzer.py, vendor_analyzer.py, environment_profiler.py, pattern_detector.py
+├── reports/
+│   ├── report_generator.py, csv_report.py, html_report.py
+├── gui/
+│   ├── main_window.py, dashboard.py, baseline_window.py, analytics_window.py, events_window.py...
+├── docs/
+│   ├── ARCHITECTURE.md, DATABASE.md, SECURITY_MODEL.md, USER_GUIDE.md, PROJECT_REPORT.md
+└── tests/
+    ├── test_parser.py, test_security.py, test_database.py, test_risk.py, test_anomaly.py, test_analytics.py
 ```
 
 ---
 
-## Security Considerations & Disclaimer
+## Documentation
 
-- **Passive Educational Tool**: This software is intended strictly for defensive security auditing and educational network awareness.
-- **No Unauthorized Testing**: The application only uses official Windows WLAN API endpoints exposed through `netsh`.
-- **Heuristic Score Limits**: The security score is an educational metric based on protocol type (e.g. WPA3 vs WEP) and does not guarantee complete protection against advanced attacks (e.g. weak passwords or rogue APs).
+Detailed documentation is available in the `docs/` directory:
+- [Architecture Reference](docs/ARCHITECTURE.md)
+- [Database Schema Reference](docs/DATABASE.md)
+- [Defensive Security Model](docs/SECURITY_MODEL.md)
+- [User Manual Guide](docs/USER_GUIDE.md)
+- [Academic Project Report](docs/PROJECT_REPORT.md)
 
 ---
 
-## Limitations (Phase 1)
+## License
 
-- **Platform Scope**: Designed specifically for Microsoft Windows OS.
-- **Hardware Metrics**: RSSI values are approximated from Windows signal percentages rather than raw hardware driver dBM readings.
-- **6 GHz Banding**: Channels above 177 without explicit Windows Band headers are classified as "Unknown" to avoid inaccurate assumptions.
+MIT License. Designed for defensive cybersecurity research, network administration, and educational wireless environment intelligence.

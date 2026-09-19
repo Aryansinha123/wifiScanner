@@ -12,10 +12,21 @@ class Network:
     signal_percent: int
     signal_dbm: Optional[int]
     channel: Optional[int]
-    frequency: str
+    band: str
     security: str
     encryption: str
     radio_type: str
+    vendor: str = "Unknown Vendor"
+    first_seen: Optional[str] = None
+    last_seen: Optional[str] = None
+    risk_score: Optional[int] = None
+
+    @property
+    def frequency(self) -> str:
+        """
+        Alias for band to maintain backward compatibility.
+        """
+        return self.band
 
     def security_score(self) -> int:
         """

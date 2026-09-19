@@ -1,0 +1,1818 @@
+You are an expert Python developer and defensive cybersecurity engineer.
+
+You are continuing development of an EXISTING project:
+
+"Wi-Fi Network Security Scanner"
+
+The project already has a working Phase 1 / Phase 1.5 implementation.
+
+DO NOT rebuild the application.
+
+DO NOT replace the existing scanner.
+
+DO NOT remove existing functionality.
+
+DO NOT unnecessarily change the existing GUI architecture.
+
+Your task is to implement:
+
+============================================================
+PHASE 2
+WI-FI SECURITY MONITORING & CHANGE DETECTION
+============================================================
+
+The purpose of Phase 2 is to transform the current passive Wi-Fi scanner into a local Wi-Fi security monitoring application.
+
+The application should remember previous scans and detect meaningful changes between scans.
+
+The application remains PASSIVE ONLY.
+
+============================================================
+IMPORTANT SECURITY RESTRICTIONS
+============================================================
+
+This project is a defensive monitoring application.
+
+DO NOT implement:
+
+- packet injection
+- deauthentication
+- password cracking
+- WPA handshake capture
+- packet capture
+- MITM
+- ARP attacks
+- credential harvesting
+- automatic Wi-Fi connection
+- exploitation
+- attacks against access points
+- attempts to bypass Wi-Fi authentication
+
+Use only information obtained through the existing Windows WLAN scanning mechanism.
+
+Continue using:
+
+netsh wlan show networks mode=bssid
+
+and:
+
+netsh wlan show interfaces
+
+No Scapy is required for Phase 2.
+
+============================================================
+CURRENT FUNCTIONALITY THAT MUST REMAIN
+============================================================
+
+The current application already supports:
+
+- Wi-Fi scanning
+- SSID
+- BSSID
+- Signal percentage
+- Estimated RSSI
+- Channel
+- Band
+- Security
+- Encryption
+- Radio type
+- Risk level
+- Search
+- Sorting
+- Network details
+- Channel analysis
+- CSV export
+- Auto refresh
+- Adapter information
+- Scan timestamp
+- Scan duration
+- Statistics
+
+ALL of these features must continue working.
+
+Do not remove or break them.
+
+============================================================
+PHASE 2 OBJECTIVES
+============================================================
+
+Add:
+
+1. SQLite database
+2. Persistent scan history
+3. Scan records
+4. Network observation records
+5. First-seen tracking
+6. Last-seen tracking
+7. New network detection
+8. Removed network detection
+9. Reappeared network detection
+10. Security configuration change detection
+11. Security downgrade detection
+12. Network event log
+13. Monitoring dashboard
+14. Historical network details
+15. Event filtering
+16. Database cleanup/management
+17. Monitoring statistics
+
+============================================================
+STEP 1 — INSPECT EXISTING PROJECT
+============================================================
+
+Before changing anything:
+
+1. Inspect the complete existing project.
+2. Identify the current files.
+3. Understand the current scanner.
+4. Understand the Network model.
+5. Understand the parser.
+6. Understand the security analyzer.
+7. Understand the GUI.
+8. Understand auto-refresh.
+9. Understand CSV export.
+
+Do not blindly overwrite files.
+
+Integrate Phase 2 into the existing implementation.
+
+============================================================
+STEP 2 — NEW PROJECT STRUCTURE
+============================================================
+
+Add a database layer and monitoring layer.
+
+Prefer this structure:
+
+wifi-network-scanner/
+│
+├── main.py
+├── requirements.txt
+├── README.md
+│
+├── models/
+│   ├── __init__.py
+│   └── network.py
+│
+├── scanner/
+│   ├── __init__.py
+│   ├── windows_scanner.py
+│   └── scanner_manager.py
+│
+├── utils/
+│   ├── __init__.py
+│   └── parser.py
+│
+├── security/
+│   ├── __init__.py
+│   └── analyzer.py
+│
+├── storage/
+│   ├── __init__.py
+│   ├── csv_export.py
+│   └── database.py
+│
+├── monitoring/
+│   ├── __init__.py
+│   ├── change_detector.py
+│   └── event_manager.py
+│
+└── gui/
+    ├── __init__.py
+    ├── main_window.py
+    ├── monitoring_window.py
+    ├── history_window.py
+    └── event_window.py
+
+Adapt this structure if the existing project uses slightly different filenames.
+
+Do not unnecessarily rename working modules.
+
+============================================================
+STEP 3 — SQLITE DATABASE
+============================================================
+
+Use SQLite.
+
+Do NOT use MySQL.
+
+Do NOT require an external database server.
+
+The database should be stored locally in the project/application data directory.
+
+Suggested filename:
+
+wifi_scanner.db
+
+Create a database manager:
+
+storage/database.py
+
+Use Python's built-in:
+
+sqlite3
+
+No additional database dependency is required.
+
+============================================================
+STEP 4 — DATABASE SCHEMA
+============================================================
+
+Create the following tables.
+
+------------------------------------------------------------
+TABLE: scans
+------------------------------------------------------------
+
+Fields:
+
+id INTEGER PRIMARY KEY AUTOINCREMENT
+
+timestamp TEXT NOT NULL
+
+duration REAL
+
+network_count INTEGER
+
+unique_ssid_count INTEGER
+
+open_count INTEGER
+
+secured_count INTEGER
+
+channel_count INTEGER
+
+------------------------------------------------------------
+TABLE: networks
+------------------------------------------------------------
+
+Fields:
+
+id INTEGER PRIMARY KEY AUTOINCREMENT
+
+ssid TEXT
+
+bssid TEXT NOT NULL
+
+first_seen TEXT NOT NULL
+
+last_seen TEXT NOT NULL
+
+last_signal INTEGER
+
+last_rssi INTEGER
+
+last_channel INTEGER
+
+last_band TEXT
+
+last_security TEXT
+
+last_encryption TEXT
+
+last_radio_type TEXT
+
+last_risk_level TEXT
+
+last_security_score INTEGER
+
+is_active INTEGER DEFAULT 1
+
+UNIQUE(bssid)
+
+IMPORTANT:
+
+BSSID is the primary identity for tracking an access point.
+
+Do NOT use SSID alone.
+
+------------------------------------------------------------
+TABLE: observations
+------------------------------------------------------------
+
+Fields:
+
+id INTEGER PRIMARY KEY AUTOINCREMENT
+
+scan_id INTEGER NOT NULL
+
+bssid TEXT NOT NULL
+
+ssid TEXT
+
+signal_percent INTEGER
+
+estimated_rssi INTEGER
+
+channel INTEGER
+
+band TEXT
+
+security TEXT
+
+encryption TEXT
+
+radio_type TEXT
+
+security_score INTEGER
+
+risk_level TEXT
+
+timestamp TEXT NOT NULL
+
+FOREIGN KEY(scan_id) REFERENCES scans(id)
+
+Every detected BSSID should create an observation for every scan.
+
+------------------------------------------------------------
+TABLE: events
+------------------------------------------------------------
+
+Fields:
+
+id INTEGER PRIMARY KEY AUTOINCREMENT
+
+timestamp TEXT NOT NULL
+
+event_type TEXT NOT NULL
+
+severity TEXT NOT NULL
+
+ssid TEXT
+
+bssid TEXT
+
+description TEXT
+
+old_value TEXT
+
+new_value TEXT
+
+acknowledged INTEGER DEFAULT 0
+
+============================================================
+STEP 5 — DATABASE INITIALIZATION
+============================================================
+
+When the application starts:
+
+1. Open/create database.
+2. Create missing tables.
+3. Do not delete existing data.
+4. Use CREATE TABLE IF NOT EXISTS.
+5. Handle database errors gracefully.
+
+The application should work even on first launch.
+
+============================================================
+STEP 6 — SAVE EACH SCAN
+============================================================
+
+Every successful scan should:
+
+1. Create a row in scans.
+2. Save scan timestamp.
+3. Save scan duration.
+4. Save total network/BSSID count.
+5. Save unique SSID count.
+6. Save open count.
+7. Save secured count.
+8. Save unique channel count.
+9. Save every detected network into observations.
+
+Example:
+
+Scan #1
+14:20:31
+11 BSSIDs
+8 unique SSIDs
+
+Scan #2
+14:21:01
+13 BSSIDs
+9 unique SSIDs
+
+Both scans must remain available in the database.
+
+============================================================
+STEP 7 — NETWORK IDENTITY
+============================================================
+
+The primary identity of a detected wireless access point is:
+
+BSSID
+
+Example:
+
+AA:BB:CC:DD:EE:FF
+
+If:
+
+SSID = HomeWiFi
+
+BSSID = AA:BB:CC:DD:EE:FF
+
+then this BSSID represents the tracked access point.
+
+If the same SSID appears with another BSSID:
+
+SSID = HomeWiFi
+
+BSSID = 11:22:33:44:55:66
+
+treat it as another access point.
+
+Do NOT merge them.
+
+============================================================
+STEP 8 — FIRST SEEN / LAST SEEN
+============================================================
+
+For every BSSID maintain:
+
+first_seen
+
+last_seen
+
+Example:
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+First Seen:
+2026-08-28 22:30:10
+
+Last Seen:
+2026-08-28 23:05:42
+
+If the BSSID appears again:
+
+Update last_seen.
+
+Do NOT change first_seen.
+
+============================================================
+STEP 9 — ACTIVE NETWORK STATE
+============================================================
+
+Maintain:
+
+is_active
+
+If a BSSID is detected in the current scan:
+
+is_active = 1
+
+If it was previously active but is NOT present in the current scan:
+
+is_active = 0
+
+IMPORTANT:
+
+A network disappearing from a scan does NOT necessarily mean it has been turned off.
+
+Possible reasons include:
+
+- signal fluctuation
+- scanning limitations
+- temporary environmental conditions
+- adapter behavior
+
+Therefore use wording:
+
+"Network no longer detected"
+
+rather than:
+
+"Network disconnected"
+
+or:
+
+"Network shut down"
+
+============================================================
+STEP 10 — NEW NETWORK DETECTION
+============================================================
+
+When a BSSID appears for the first time:
+
+Create an event.
+
+Example:
+
+Event Type:
+
+NEW_NETWORK
+
+Severity:
+
+INFO
+
+Description:
+
+"New wireless access point detected."
+
+Example UI:
+
+NEW NETWORK DETECTED
+
+SSID:
+Unknown_AP
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Security:
+WPA2
+
+Channel:
+6
+
+First Seen:
+23:12:42
+
+IMPORTANT:
+
+Do not automatically classify a new network as malicious.
+
+New ≠ malicious.
+
+============================================================
+STEP 11 — NETWORK DISAPPEARANCE
+============================================================
+
+If a previously observed active BSSID is missing from the current scan:
+
+Create:
+
+NETWORK_NOT_DETECTED
+
+Severity:
+
+INFO
+
+Example:
+
+NETWORK NO LONGER DETECTED
+
+SSID:
+Motorola
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Last Seen:
+23:18:44
+
+Do not say:
+
+"Router is offline."
+
+Say:
+
+"Network was not detected in the latest scan."
+
+============================================================
+STEP 12 — REAPPEARED NETWORK
+============================================================
+
+If:
+
+is_active = 0
+
+and the BSSID appears again:
+
+Create:
+
+NETWORK_REAPPEARED
+
+Severity:
+
+INFO
+
+Example:
+
+NETWORK REAPPEARED
+
+SSID:
+Motorola
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Current Signal:
+85%
+
+Update:
+
+is_active = 1
+
+Update:
+
+last_seen
+
+Do not change:
+
+first_seen
+
+============================================================
+STEP 13 — SECURITY CHANGE DETECTION
+============================================================
+
+Compare the previous observation for the same BSSID with the current observation.
+
+Track:
+
+security
+encryption
+security_score
+risk_level
+
+Example:
+
+Previous:
+
+WPA2
+CCMP
+85
+LOW
+
+Current:
+
+OPEN
+None
+0
+CRITICAL
+
+Create:
+
+SECURITY_CHANGE
+
+Severity:
+
+HIGH
+
+Description:
+
+"Wireless security configuration changed."
+
+Old:
+
+WPA2 / CCMP
+
+New:
+
+OPEN / None
+
+============================================================
+STEP 14 — SECURITY DOWNGRADE DETECTION
+============================================================
+
+Implement a security ranking:
+
+WPA3 = 4
+WPA2 = 3
+WPA = 2
+WEP = 1
+OPEN = 0
+UNKNOWN = 0
+
+If:
+
+new security rank < old security rank
+
+create:
+
+SECURITY_DOWNGRADE
+
+Severity:
+
+HIGH
+
+Examples:
+
+WPA3 → WPA2
+
+WPA2 → WPA
+
+WPA2 → OPEN
+
+WPA → WEP
+
+WEP → OPEN
+
+Example event:
+
+SECURITY DOWNGRADE DETECTED
+
+SSID:
+HomeWiFi
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Previous:
+WPA2
+
+Current:
+OPEN
+
+Severity:
+HIGH
+
+IMPORTANT:
+
+This is based only on observed configuration changes.
+
+Do not claim the access point has been hacked.
+
+============================================================
+STEP 15 — SECURITY UPGRADE
+============================================================
+
+If:
+
+new security rank > old security rank
+
+create:
+
+SECURITY_UPGRADE
+
+Severity:
+
+INFO
+
+Example:
+
+OPEN → WPA2
+
+Description:
+
+"Wireless security configuration improved."
+
+============================================================
+STEP 16 — CHANNEL CHANGE
+============================================================
+
+Track channel changes for the same BSSID.
+
+If:
+
+Channel 6 → Channel 11
+
+create:
+
+CHANNEL_CHANGE
+
+Severity:
+
+INFO
+
+Example:
+
+CHANNEL CHANGE
+
+SSID:
+HomeWiFi
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Previous Channel:
+6
+
+Current Channel:
+11
+
+Do not call this suspicious automatically.
+
+============================================================
+STEP 17 — SIGNAL CHANGE
+============================================================
+
+Do NOT create events for every tiny signal fluctuation.
+
+For example:
+
+85% → 83%
+
+should NOT create an event.
+
+Only optionally create a signal event if the change exceeds a meaningful threshold.
+
+Suggested:
+
+20 percentage points
+
+Example:
+
+90% → 60%
+
+could generate:
+
+SIGNAL_CHANGE
+
+Severity:
+
+INFO
+
+Description:
+
+"Significant signal change detected."
+
+Keep this feature optional if it creates too many events.
+
+============================================================
+STEP 18 — SSID CHANGE FOR SAME BSSID
+============================================================
+
+If the same BSSID changes its SSID:
+
+Old:
+
+HomeWiFi
+
+New:
+
+GuestWiFi
+
+create:
+
+SSID_CHANGE
+
+Severity:
+
+MEDIUM
+
+Example:
+
+SSID CHANGE DETECTED
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Previous:
+HomeWiFi
+
+Current:
+GuestWiFi
+
+Do not claim malicious behavior.
+
+============================================================
+STEP 19 — EVENT SEVERITY
+============================================================
+
+Use:
+
+INFO
+MEDIUM
+HIGH
+CRITICAL
+
+Suggested classification:
+
+NEW_NETWORK
+→ INFO
+
+NETWORK_NOT_DETECTED
+→ INFO
+
+NETWORK_REAPPEARED
+→ INFO
+
+CHANNEL_CHANGE
+→ INFO
+
+SIGNAL_CHANGE
+→ INFO
+
+SSID_CHANGE
+→ MEDIUM
+
+SECURITY_CHANGE
+→ MEDIUM
+
+SECURITY_DOWNGRADE
+→ HIGH
+
+Do not use CRITICAL automatically unless the event represents a clearly significant security configuration exposure.
+
+An OPEN network itself may still show:
+
+Risk Level = CRITICAL
+
+but that does not mean the event is necessarily a critical cybersecurity incident.
+
+Keep:
+
+Risk Level
+
+and:
+
+Event Severity
+
+as separate concepts.
+
+============================================================
+STEP 20 — EVENT MANAGER
+============================================================
+
+Create:
+
+monitoring/event_manager.py
+
+Provide functions such as:
+
+create_event()
+
+get_recent_events()
+
+get_events()
+
+mark_event_acknowledged()
+
+clear_events()
+
+get_event_counts()
+
+Keep event database operations separate from the GUI.
+
+============================================================
+STEP 21 — CHANGE DETECTOR
+============================================================
+
+Create:
+
+monitoring/change_detector.py
+
+Implement a clean change detection engine.
+
+Suggested interface:
+
+detect_changes(previous_state, current_networks)
+
+Return a list of detected events.
+
+The function should be testable without launching the GUI.
+
+It should detect:
+
+- new networks
+- removed/not detected networks
+- reappeared networks
+- security changes
+- security downgrades
+- security upgrades
+- channel changes
+- significant signal changes
+- SSID changes
+
+Do not mix Tkinter code into this module.
+
+============================================================
+STEP 22 — MONITORING WINDOW
+============================================================
+
+Add a new button to the main GUI:
+
+[ Security Monitor ]
+
+Place it near:
+
+Network Details
+Channel Analysis
+
+Clicking it opens:
+
+Wi-Fi Security Monitor
+
+============================================================
+MONITORING DASHBOARD
+============================================================
+
+Create a professional monitoring dashboard.
+
+Display:
+
+--------------------------------------------------
+WI-FI SECURITY MONITOR
+--------------------------------------------------
+
+Monitoring Status:
+ACTIVE
+
+Last Scan:
+23:25:42
+
+Networks:
+14
+
+New:
+2
+
+Not Detected:
+1
+
+Security Changes:
+1
+
+High Severity:
+1
+
+--------------------------------------------------
+
+RECENT SECURITY EVENTS
+
+Time       Type                 Severity
+
+23:25:42   NEW NETWORK          INFO
+23:24:12   CHANNEL CHANGE       INFO
+23:22:51   SECURITY DOWNGRADE   HIGH
+
+--------------------------------------------------
+
+CURRENT NETWORK STATE
+
+Active BSSIDs
+First Seen
+Last Seen
+
+--------------------------------------------------
+
+Buttons:
+
+[ Event Details ]
+
+[ Network History ]
+
+[ Refresh ]
+
+[ Close ]
+
+============================================================
+STEP 23 — EVENT TABLE
+============================================================
+
+Create a Treeview with:
+
+Time
+Event
+Severity
+SSID
+BSSID
+Description
+
+Example:
+
+23:25:42
+NEW_NETWORK
+INFO
+CoffeeWiFi
+AA:BB:CC:DD:EE:FF
+New wireless access point detected.
+
+Color/style the severity carefully, but always display the text.
+
+============================================================
+STEP 24 — EVENT DETAILS
+============================================================
+
+Double-clicking an event should open:
+
+EVENT DETAILS
+
+Event:
+SECURITY DOWNGRADE
+
+Severity:
+HIGH
+
+Time:
+23:25:42
+
+SSID:
+HomeWiFi
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Previous:
+WPA2 / CCMP
+
+Current:
+OPEN / None
+
+Explanation:
+"The wireless security configuration observed for this BSSID changed from WPA2 to OPEN."
+
+Add:
+
+[ Acknowledge ]
+
+[ Close ]
+
+============================================================
+STEP 25 — NETWORK HISTORY
+============================================================
+
+Add:
+
+[ Network History ]
+
+When a network is selected, show its historical observations.
+
+Example:
+
+NETWORK HISTORY
+
+SSID:
+HomeWiFi
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+First Seen:
+22:10:32
+
+Last Seen:
+23:25:42
+
+--------------------------------------------------
+
+Time       Signal  Channel  Security
+
+22:10:32   90%      6       WPA2
+22:11:02   87%      6       WPA2
+22:11:32   70%      6       WPA2
+22:12:02   55%      11      WPA2
+23:25:42   60%      11      OPEN
+
+This is a historical observation table.
+
+============================================================
+STEP 26 — MAIN GUI INTEGRATION
+============================================================
+
+Add a new button:
+
+[ Security Monitor ]
+
+The existing buttons must remain:
+
+[ Network Details ]
+
+[ Channel Analysis ]
+
+[ Export CSV ]
+
+Do not remove any existing buttons.
+
+Optionally add:
+
+[ Scan History ]
+
+if this fits naturally into the existing GUI.
+
+============================================================
+STEP 27 — SCAN PIPELINE
+============================================================
+
+Modify the scan workflow to become:
+
+User clicks Scan
+        ↓
+Windows Scanner
+        ↓
+Raw netsh output
+        ↓
+Parser
+        ↓
+Network objects
+        ↓
+Security Analyzer
+        ↓
+Save scan to SQLite
+        ↓
+Compare with previous state
+        ↓
+Generate events
+        ↓
+Update network state
+        ↓
+Update GUI
+        ↓
+Show monitoring statistics
+
+IMPORTANT:
+
+Database failure should NOT make the Wi-Fi scanner completely unusable.
+
+If possible:
+
+- log the database error
+- notify the user
+- keep current scan results available
+
+============================================================
+STEP 28 — AUTO REFRESH INTEGRATION
+============================================================
+
+The existing 30-second Auto Refresh should automatically:
+
+1. Scan
+2. Save scan
+3. Detect changes
+4. Generate events
+5. Update dashboard
+
+Do not create a separate independent scanning loop.
+
+The existing scanner remains the single source of current scan data.
+
+============================================================
+STEP 29 — DUPLICATE EVENT PREVENTION
+============================================================
+
+Avoid creating duplicate events for the same scan.
+
+For example:
+
+A BSSID disappears during scan #5.
+
+Create:
+
+NETWORK_NOT_DETECTED
+
+Only once for that transition.
+
+Do not generate the same event repeatedly during subsequent scans while it remains absent.
+
+If it reappears:
+
+Create:
+
+NETWORK_REAPPEARED
+
+If it disappears again later:
+
+Create another:
+
+NETWORK_NOT_DETECTED
+
+This creates meaningful state transitions.
+
+============================================================
+STEP 30 — SECURITY CHANGE DUPLICATE PREVENTION
+============================================================
+
+If a network remains:
+
+WPA2
+
+across:
+
+20 scans
+
+do NOT create 20 security events.
+
+Only create an event when:
+
+previous security != current security
+
+============================================================
+STEP 31 — EVENT RETENTION
+============================================================
+
+Do not automatically delete events.
+
+Keep historical events in SQLite.
+
+Add a database cleanup option if practical.
+
+For example:
+
+[ Clear History ]
+
+IMPORTANT:
+
+If implemented, ask for confirmation before deleting historical data.
+
+Do not silently delete the database.
+
+============================================================
+STEP 32 — MONITORING STATISTICS
+============================================================
+
+Display:
+
+Total scans
+Total tracked BSSIDs
+Active BSSIDs
+New networks detected
+Networks no longer detected
+Security changes
+Security downgrades
+High severity events
+
+Example:
+
+TOTAL SCANS
+42
+
+TRACKED BSSIDS
+31
+
+ACTIVE
+17
+
+SECURITY EVENTS
+3
+
+HIGH SEVERITY
+1
+
+============================================================
+STEP 33 — FILTER EVENTS
+============================================================
+
+Allow filtering events by:
+
+All
+INFO
+MEDIUM
+HIGH
+CRITICAL
+
+Also optionally filter by event type.
+
+Example:
+
+[ All Events ▼ ]
+
+[ All Severity ▼ ]
+
+Search:
+
+[____________]
+
+Search:
+
+SSID
+BSSID
+event type
+description
+
+============================================================
+STEP 34 — ACKNOWLEDGE EVENTS
+============================================================
+
+Allow:
+
+Acknowledge
+
+An acknowledged event remains in the database.
+
+Do not delete it.
+
+Display status:
+
+ACKNOWLEDGED
+
+or:
+
+ACTIVE
+
+============================================================
+STEP 35 — SECURITY MONITORING TERMINOLOGY
+============================================================
+
+Use careful cybersecurity language.
+
+GOOD:
+
+"New network detected."
+
+"Network was not detected in the latest scan."
+
+"Security configuration changed."
+
+"Security downgrade observed."
+
+"Potential security exposure."
+
+BAD:
+
+"Hacker detected."
+
+"Router hacked."
+
+"Attacker detected."
+
+"Network compromised."
+
+Unless there is actual evidence, do not make those claims.
+
+============================================================
+STEP 36 — PASSIVE MONITORING LIMITATIONS
+============================================================
+
+Add a small informational section in the monitoring dashboard:
+
+"Monitoring Limitations"
+
+Text:
+
+"This application performs passive wireless observation using information provided by the operating system. A network appearing, disappearing, or changing configuration does not by itself indicate malicious activity. Events should be treated as indicators for further investigation."
+
+============================================================
+STEP 37 — DATABASE ERROR HANDLING
+============================================================
+
+Handle:
+
+- database locked
+- database unavailable
+- corrupted database
+- permission failure
+- invalid query
+
+Do not crash the GUI.
+
+Use logging.
+
+Show a simple user-facing message where appropriate.
+
+============================================================
+STEP 38 — DATABASE PERFORMANCE
+============================================================
+
+Use SQLite efficiently.
+
+Use:
+
+indexes
+
+where useful.
+
+At minimum consider indexes on:
+
+observations.bssid
+observations.timestamp
+events.timestamp
+events.bssid
+networks.bssid
+
+Use parameterized SQL queries.
+
+Never construct SQL using raw user input.
+
+============================================================
+STEP 39 — TESTING
+============================================================
+
+Create tests for:
+
+Database initialization
+
+Scan insertion
+
+Network insertion
+
+Observation insertion
+
+First seen
+
+Last seen
+
+New network detection
+
+Removed network detection
+
+Reappeared network detection
+
+Security change detection
+
+Security downgrade detection
+
+Security upgrade detection
+
+Channel change detection
+
+SSID change detection
+
+Event duplicate prevention
+
+Event acknowledgement
+
+============================================================
+STEP 40 — CHANGE DETECTION TEST EXAMPLES
+============================================================
+
+Test case 1:
+
+Previous:
+
+BSSID A
+WPA2
+Channel 6
+
+Current:
+
+BSSID A
+WPA2
+Channel 6
+
+Expected:
+
+No event.
+
+--------------------------------------------------
+
+Test case 2:
+
+Previous:
+
+BSSID A
+
+Current:
+
+BSSID A
+BSSID B
+
+Expected:
+
+NEW_NETWORK for BSSID B.
+
+--------------------------------------------------
+
+Test case 3:
+
+Previous:
+
+BSSID A
+WPA2
+
+Current:
+
+BSSID A
+OPEN
+
+Expected:
+
+SECURITY_CHANGE
+
+and:
+
+SECURITY_DOWNGRADE
+
+--------------------------------------------------
+
+Test case 4:
+
+Previous:
+
+BSSID A
+OPEN
+
+Current:
+
+BSSID A
+WPA2
+
+Expected:
+
+SECURITY_CHANGE
+
+and:
+
+SECURITY_UPGRADE
+
+--------------------------------------------------
+
+Test case 5:
+
+Previous:
+
+BSSID A
+Channel 6
+
+Current:
+
+BSSID A
+Channel 11
+
+Expected:
+
+CHANNEL_CHANGE
+
+--------------------------------------------------
+
+Test case 6:
+
+Previous:
+
+BSSID A
+present
+
+Current:
+
+BSSID A
+absent
+
+Expected:
+
+NETWORK_NOT_DETECTED
+
+--------------------------------------------------
+
+Test case 7:
+
+Previous:
+
+BSSID A
+inactive
+
+Current:
+
+BSSID A
+present
+
+Expected:
+
+NETWORK_REAPPEARED
+
+============================================================
+STEP 41 — DATABASE LOCATION
+============================================================
+
+Do not place the database inside arbitrary source modules.
+
+Prefer:
+
+data/
+
+wifi_scanner.db
+
+If creating a data directory:
+
+wifi-network-scanner/
+│
+├── data/
+│   └── wifi_scanner.db
+
+Add data/ to .gitignore if appropriate.
+
+Do not commit user-generated database history to source control.
+
+============================================================
+STEP 42 — GITIGNORE
+============================================================
+
+If .gitignore does not exist, create/update it.
+
+Include:
+
+__pycache__/
+*.pyc
+venv/
+.env
+data/*.db
+
+Do not ignore source code.
+
+============================================================
+STEP 43 — CSV EXPORT
+============================================================
+
+Keep the existing current-scan CSV export.
+
+Optionally add:
+
+Export Events
+
+with columns:
+
+Timestamp
+Event Type
+Severity
+SSID
+BSSID
+Description
+Old Value
+New Value
+Acknowledged
+
+Do not remove the existing network CSV export.
+
+============================================================
+STEP 44 — README UPDATE
+============================================================
+
+Update README.md with Phase 2.
+
+Include:
+
+Phase 1:
+Passive Wi-Fi scanning
+
+Phase 2:
+Security monitoring and change detection
+
+Explain:
+
+SQLite database
+Scan history
+BSSID tracking
+Event generation
+Security change detection
+Security downgrade detection
+Network appearance/disappearance tracking
+
+Also document:
+
+Database location
+
+How to clear history
+
+How monitoring works
+
+Limitations
+
+Security considerations
+
+============================================================
+STEP 45 — NO ADVANCED THREAT CLAIMS
+============================================================
+
+The system must NOT claim:
+
+"evil twin detected"
+
+"rogue AP detected"
+
+"attacker detected"
+
+based only on:
+
+SSID
+BSSID
+signal
+channel
+security
+
+Those features belong to a future phase and require more careful heuristics.
+
+Phase 2 only reports observable state changes.
+
+============================================================
+STEP 46 — USER EXPERIENCE
+============================================================
+
+The existing scanner remains the main screen.
+
+Do not force the user to open the monitoring dashboard every time.
+
+The scanner should continue working exactly as before.
+
+The monitoring dashboard is an additional feature.
+
+============================================================
+STEP 47 — FINAL ARCHITECTURE
+============================================================
+
+The resulting architecture should approximately be:
+
+                 MAIN GUI
+                    │
+                    ▼
+             Scanner Manager
+                    │
+                    ▼
+             Windows Scanner
+                    │
+                    ▼
+                  netsh
+                    │
+                    ▼
+                 Parser
+                    │
+                    ▼
+             Network Objects
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+ Security Analyzer       SQLite Storage
+          │                   │
+          │                   ▼
+          │             Scan History
+          │                   │
+          └──────────┬────────┘
+                     ▼
+              Change Detector
+                     │
+                     ▼
+               Event Manager
+                     │
+                     ▼
+             Security Monitor

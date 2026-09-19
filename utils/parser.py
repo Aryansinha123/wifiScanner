@@ -1,12 +1,12 @@
 import re
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from models.network import Network
 
 
 def signal_to_dbm(signal_percent: int) -> int:
     """
     Provides an estimated RSSI value (dBm) from Windows signal percentage.
-    Formula: RSSI = -100 + (signal_percent * 0.5)
+    Formula: Estimated RSSI = -100 + (signal_percent * 0.5)
     """
     clamped = max(0, min(100, signal_percent))
     return int(-100 + (clamped * 0.5))
@@ -77,7 +77,7 @@ def parse_networks(raw_data: str) -> List[Network]:
             return
 
         sec_label = normalize_security(current_authentication, current_encryption)
-        freq_label = get_frequency(current_channel, current_band)
+        band_label = get_frequency(current_channel, current_band)
         estimated_rssi = signal_to_dbm(current_signal)
 
         network = Network(
@@ -86,7 +86,7 @@ def parse_networks(raw_data: str) -> List[Network]:
             signal_percent=current_signal,
             signal_dbm=estimated_rssi,
             channel=current_channel,
-            frequency=freq_label,
+            band=band_label,
             security=sec_label,
             encryption=current_encryption if current_encryption else "Unknown",
             radio_type=current_radio if current_radio else "Unknown"
@@ -161,3 +161,59 @@ def parse_networks(raw_data: str) -> List[Network]:
 
     save_current_network()
     return networks
+
+
+def parse_interface(raw_data: str) -> Dict[str, Any]:
+    """
+    Parses raw text output from 'netsh wlan show interfaces'
+    and returns a dictionary containing adapter information.
+    """
+    info = {
+        "name": "Unknown",
+        "description": "Unknown",
+        "state": "Unknown",
+        "ssid": "Not Connected",
+        "bssid": "N/A",
+        "channel": None,
+        "signal_percent": None,
+        "radio_type": "Unknown",
+        "band": "Unknown"
+    }
+
+    lines = raw_data.splitlines()
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or ":" not in stripped:
+            continue
+
+        parts = stripped.split(":", 1)
+        key = parts[0].strip().lower()
+        val = parts[1].strip()
+
+        if key in ("name", "interface name"):
+            info["name"] = val
+        elif key == "description":
+            info["description"] = val
+        elif key == "state":
+            info["state"] = val
+        elif key == "ssid":
+            info["ssid"] = val if val else "Not Connected"
+        elif key in ("ap bssid", "bssid"):
+            info["bssid"] = val.upper() if val else "N/A"
+        elif key == "channel":
+            if val.isdigit():
+                info["channel"] = int(val)
+        elif key == "signal":
+            val_clean = val.replace("%", "").strip()
+            if val_clean.isdigit():
+                info["signal_percent"] = int(val_clean)
+        elif key == "radio type":
+            info["radio_type"] = val
+        elif key == "band":
+            info["band"] = val
+
+    if info["channel"] is not None and info["band"] == "Unknown":
+        info["band"] = get_frequency(info["channel"])
+
+    return info

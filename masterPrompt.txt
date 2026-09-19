@@ -1,0 +1,2133 @@
+You are a senior Python architect, defensive cybersecurity engineer,
+wireless-networking engineer, data engineer, UI/UX engineer, and testing
+engineer.
+
+You are working on an EXISTING project called:
+
+"Wi-Fi Network Security Scanner"
+
+The project already contains a working passive Windows Wi-Fi scanner,
+security analyzer, SQLite monitoring database, event/change detection,
+network history, event dashboard, CSV export, and a Tkinter desktop GUI.
+
+Your task is to transform the existing project into a highly advanced,
+feature-rich defensive Wi-Fi security monitoring and wireless-environment
+intelligence platform.
+
+============================================================
+CRITICAL REQUIREMENT
+============================================================
+
+DO NOT rebuild the application from scratch.
+
+DO NOT delete working functionality.
+
+DO NOT replace the existing scanner unnecessarily.
+
+DO NOT break the existing database.
+
+DO NOT remove existing GUI features.
+
+First inspect the entire existing project and understand its architecture.
+
+Then incrementally improve it.
+
+If an existing feature already works, preserve it and extend it.
+
+============================================================
+SECURITY SCOPE
+============================================================
+
+This is a DEFENSIVE and PASSIVE wireless security monitoring application.
+
+The application may:
+
+- discover nearby Wi-Fi networks using normal OS WLAN scanning
+- analyze wireless configuration
+- track networks over time
+- detect configuration changes
+- detect anomalies in observed wireless environments
+- analyze channels
+- analyze signal behavior
+- maintain historical records
+- generate security assessments
+- generate reports
+- visualize wireless environments
+- identify potentially suspicious patterns based on passive observations
+
+The application MUST NOT:
+
+- perform deauthentication
+- perform packet injection
+- capture WPA handshakes
+- crack Wi-Fi passwords
+- brute-force credentials
+- attempt unauthorized authentication
+- automatically connect to networks
+- intercept traffic
+- perform MITM attacks
+- perform ARP attacks
+- exploit routers
+- bypass wireless authentication
+- steal credentials
+- attack access points
+- perform offensive wireless operations
+
+All detection must be based on PASSIVE observations.
+
+============================================================
+PROJECT GOAL
+============================================================
+
+Turn the existing scanner into:
+
+"Wi-Fi Security Intelligence & Monitoring Platform"
+
+The final application should be capable of:
+
+1. Passive Wi-Fi discovery
+2. Wireless security analysis
+3. Historical monitoring
+4. BSSID tracking
+5. SSID tracking
+6. Access-point relationship analysis
+7. Security-change detection
+8. Network appearance/disappearance detection
+9. Channel analysis
+10. Signal analysis
+11. Wireless anomaly detection
+12. Suspicious-pattern detection
+13. Risk scoring
+14. Security event management
+15. Historical analytics
+16. Interactive dashboards
+17. Reporting
+18. Data export
+19. Database management
+20. Configuration management
+21. Application diagnostics
+22. Background monitoring
+23. Baseline creation
+24. Baseline deviation detection
+25. Wireless environment profiling
+
+============================================================
+ARCHITECTURE
+============================================================
+
+Use a modular architecture.
+
+Target architecture:
+
+                    GUI
+                     │
+             Application Layer
+                     │
+       ┌─────────────┼─────────────┐
+       │             │             │
+    Scanner      Monitoring     Analytics
+       │             │             │
+       └─────────────┼─────────────┘
+                     │
+                Security Engine
+                     │
+       ┌─────────────┼─────────────┐
+       │             │             │
+   Anomaly        Risk Engine    Event Engine
+   Detection
+       │             │             │
+       └─────────────┼─────────────┘
+                     │
+                 Data Layer
+                     │
+                   SQLite
+                     │
+                Historical Data
+
+Use clean separation between:
+
+- acquisition
+- parsing
+- normalization
+- storage
+- monitoring
+- analytics
+- security analysis
+- anomaly detection
+- GUI
+- reporting
+- configuration
+
+============================================================
+TECHNOLOGY
+============================================================
+
+Primary language:
+
+Python 3.11+
+
+Current GUI:
+
+Tkinter / ttk
+
+Database:
+
+SQLite
+
+Use standard Python libraries whenever practical.
+
+Recommended libraries only when genuinely useful:
+
+pandas
+matplotlib
+numpy
+
+Optional:
+
+psutil
+
+Do NOT introduce unnecessary dependencies.
+
+Do NOT introduce Scapy for attack functionality.
+
+The scanner should continue using Windows WLAN information such as:
+
+netsh wlan show interfaces
+
+netsh wlan show networks mode=bssid
+
+============================================================
+PROJECT STRUCTURE
+============================================================
+
+Evolve the current structure toward:
+
+wifi-security-platform/
+│
+├── main.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+├── config.json
+│
+├── data/
+│   ├── wifi_scanner.db
+│   ├── exports/
+│   └── reports/
+│
+├── models/
+│   ├── network.py
+│   ├── scan.py
+│   ├── event.py
+│   ├── observation.py
+│   ├── baseline.py
+│   └── anomaly.py
+│
+├── scanner/
+│   ├── windows_scanner.py
+│   ├── scanner_manager.py
+│   ├── adapter_manager.py
+│   └── scan_scheduler.py
+│
+├── parser/
+│   ├── netsh_parser.py
+│   ├── normalizer.py
+│   └── validators.py
+│
+├── storage/
+│   ├── database.py
+│   ├── repositories.py
+│   ├── migrations.py
+│   └── backup.py
+│
+├── security/
+│   ├── analyzer.py
+│   ├── risk_engine.py
+│   ├── security_rules.py
+│   └── configuration_analyzer.py
+│
+├── monitoring/
+│   ├── change_detector.py
+│   ├── state_manager.py
+│   ├── event_manager.py
+│   ├── baseline_manager.py
+│   └── scheduler.py
+│
+├── analytics/
+│   ├── channel_analyzer.py
+│   ├── signal_analyzer.py
+│   ├── network_analyzer.py
+│   ├── anomaly_detector.py
+│   ├── statistics.py
+│   └── trends.py
+│
+├── intelligence/
+│   ├── bssid_analyzer.py
+│   ├── ssid_analyzer.py
+│   ├── vendor_analyzer.py
+│   ├── pattern_detector.py
+│   └── environment_profiler.py
+│
+├── reports/
+│   ├── report_generator.py
+│   ├── csv_report.py
+│   └── html_report.py
+│
+├── gui/
+│   ├── main_window.py
+│   ├── dashboard.py
+│   ├── monitor_window.py
+│   ├── history_window.py
+│   ├── network_details.py
+│   ├── channel_window.py
+│   ├── analytics_window.py
+│   ├── events_window.py
+│   ├── reports_window.py
+│   ├── settings_window.py
+│   └── database_window.py
+│
+└── tests/
+    ├── test_parser.py
+    ├── test_security.py
+    ├── test_database.py
+    ├── test_monitoring.py
+    ├── test_anomaly.py
+    ├── test_risk.py
+    └── test_analytics.py
+
+Adapt this structure to the existing project instead of blindly recreating
+everything.
+
+============================================================
+FEATURE GROUP 1
+ADVANCED WI-FI DISCOVERY
+============================================================
+
+Improve passive network discovery.
+
+Track:
+
+SSID
+BSSID
+signal percentage
+estimated RSSI
+channel
+band
+security
+encryption
+radio type
+network type
+first seen
+last seen
+current state
+risk
+security score
+
+Support:
+
+2.4 GHz
+5 GHz
+Unknown
+
+Do not make unreliable 6 GHz assumptions from insufficient data.
+
+Handle:
+
+hidden SSIDs
+duplicate SSIDs
+multiple BSSIDs
+missing values
+unexpected netsh formatting
+
+============================================================
+FEATURE GROUP 2
+ADAPTER MANAGEMENT
+============================================================
+
+Create an adapter information panel.
+
+Display:
+
+Interface name
+State
+Current SSID
+Current BSSID
+Current channel
+Current signal
+Radio type
+
+If multiple wireless interfaces are available, detect and display them.
+
+Allow the user to select the adapter when technically possible.
+
+Do not modify wireless configuration.
+
+============================================================
+FEATURE GROUP 3
+SCAN ENGINE
+============================================================
+
+Create a robust scan engine.
+
+Features:
+
+Manual scan
+Refresh
+Auto-refresh
+Custom interval
+Pause monitoring
+Resume monitoring
+Scan status
+Scan duration
+Last scan timestamp
+Scan counter
+Scan error reporting
+
+Prevent concurrent scans.
+
+Never freeze the GUI.
+
+Use background worker threads.
+
+Use safe GUI updates.
+
+============================================================
+FEATURE GROUP 4
+SCAN SCHEDULER
+============================================================
+
+Allow:
+
+10 seconds
+30 seconds
+1 minute
+5 minutes
+10 minutes
+Custom interval
+
+Also support:
+
+Manual only
+
+Prevent duplicate scheduled jobs.
+
+Show:
+
+Monitoring:
+ACTIVE
+
+or:
+
+Monitoring:
+PAUSED
+
+============================================================
+FEATURE GROUP 5
+DATABASE
+============================================================
+
+Use SQLite as the persistent storage layer.
+
+Maintain:
+
+scans
+networks
+observations
+events
+baselines
+anomalies
+security_changes
+channel_statistics
+
+Use indexes.
+
+Use parameterized SQL.
+
+Use migrations.
+
+Never delete existing data during upgrades.
+
+Create automatic database backups before schema migrations.
+
+============================================================
+FEATURE GROUP 6
+NETWORK LIFECYCLE TRACKING
+============================================================
+
+Track each BSSID.
+
+States:
+
+ACTIVE
+TEMPORARILY_MISSING
+NOT_DETECTED
+
+Use a configurable missing-scan threshold.
+
+Default:
+
+3 scans
+
+A network missing for one scan should NOT immediately be considered gone.
+
+Track:
+
+first_seen
+last_seen
+consecutive_missed_scans
+total_observations
+
+Generate:
+
+NEW_NETWORK
+NETWORK_NOT_DETECTED
+NETWORK_REAPPEARED
+
+Avoid duplicate events.
+
+============================================================
+FEATURE GROUP 7
+SECURITY CHANGE DETECTION
+============================================================
+
+Track:
+
+authentication
+encryption
+security score
+risk level
+
+Detect:
+
+WPA3 → WPA2
+WPA2 → WPA
+WPA2 → OPEN
+WPA → WEP
+WEP → OPEN
+
+and upgrades:
+
+OPEN → WPA2
+WPA2 → WPA3
+
+Generate events only when the actual configuration changes.
+
+============================================================
+FEATURE GROUP 8
+SSID/BSSID INTELLIGENCE
+============================================================
+
+Build relationships:
+
+SSID → BSSIDs
+
+Example:
+
+HomeWiFi
+ ├── BSSID A
+ ├── BSSID B
+ └── BSSID C
+
+Show:
+
+number of BSSIDs per SSID
+channels used
+bands used
+security configuration
+signal range
+first seen
+last seen
+
+Allow the user to open:
+
+SSID Profile
+
+============================================================
+FEATURE GROUP 9
+BSSID PROFILE
+============================================================
+
+Create a detailed BSSID profile.
+
+Display:
+
+BSSID
+SSID
+First Seen
+Last Seen
+Observation Count
+Current Signal
+Average Signal
+Minimum Signal
+Maximum Signal
+Channels Used
+Bands Used
+Security History
+Encryption History
+Radio Types
+Current Risk
+Security Events
+Anomalies
+
+============================================================
+FEATURE GROUP 10
+SSID PROFILE
+============================================================
+
+Create:
+
+SSID Profile
+
+Display:
+
+SSID
+Number of BSSIDs
+First Seen
+Last Seen
+Security types observed
+Encryption types
+Channels
+Bands
+Average signal
+Strongest signal
+Weakest signal
+Network history
+
+============================================================
+FEATURE GROUP 11
+SECURITY RISK ENGINE
+============================================================
+
+Build a multi-factor heuristic risk engine.
+
+Do NOT simply use:
+
+OPEN = CRITICAL
+
+Instead calculate risk from multiple observable factors.
+
+Potential factors:
+
+security protocol
+encryption
+security changes
+configuration instability
+unusual BSSID behavior
+SSID/BSSID relationship changes
+rapid appearance/disappearance
+unexpected channel changes
+baseline deviations
+signal anomalies
+
+Create:
+
+risk_score: 0-100
+
+and:
+
+risk_level
+
+LOW
+MEDIUM
+HIGH
+CRITICAL
+UNKNOWN
+
+Document the formula.
+
+Do not claim the score proves malicious activity.
+
+============================================================
+FEATURE GROUP 12
+SECURITY CONFIGURATION ANALYSIS
+============================================================
+
+Analyze:
+
+OPEN
+WEP
+WPA
+WPA2
+WPA3
+
+Encryption:
+
+None
+TKIP
+CCMP
+AES
+Unknown
+
+Generate informational findings.
+
+Examples:
+
+"No wireless encryption detected."
+
+"Legacy wireless security detected."
+
+"Modern wireless security configuration detected."
+
+"Security configuration changed from WPA2 to OPEN."
+
+============================================================
+FEATURE GROUP 13
+CHANNEL ANALYTICS
+============================================================
+
+Build detailed channel analysis.
+
+Display:
+
+channel
+band
+network count
+unique SSID count
+average signal
+strongest signal
+weakest signal
+
+Separate:
+
+2.4 GHz
+
+and:
+
+5 GHz
+
+Show channel density.
+
+Example:
+
+Channel 6
+Networks: 7
+Unique SSIDs: 5
+Average Signal: 62%
+
+Use wording:
+
+"Detected network density"
+
+Do not claim actual RF interference.
+
+============================================================
+FEATURE GROUP 14
+CHANNEL TREND ANALYSIS
+============================================================
+
+Store channel observations historically.
+
+Show:
+
+Channel 1
+Channel 6
+Channel 11
+
+over time.
+
+Allow:
+
+current
+last hour
+last day
+last week
+
+if enough historical data exists.
+
+Use charts where practical.
+
+============================================================
+FEATURE GROUP 15
+SIGNAL ANALYTICS
+============================================================
+
+For each BSSID calculate:
+
+current signal
+average signal
+minimum signal
+maximum signal
+signal range
+signal standard deviation
+
+Detect significant changes.
+
+Do not create events for tiny fluctuations.
+
+Make threshold configurable.
+
+============================================================
+FEATURE GROUP 16
+SIGNAL HISTORY GRAPH
+============================================================
+
+Create a graph:
+
+Time → Signal %
+
+for selected BSSID.
+
+Also optionally:
+
+Time → Estimated RSSI
+
+Clearly label estimated RSSI.
+
+============================================================
+FEATURE GROUP 17
+ANOMALY DETECTION
+============================================================
+
+Create a passive anomaly detection engine.
+
+Detect patterns such as:
+
+1. sudden security downgrade
+2. unusual channel movement
+3. unusual SSID/BSSID relationship change
+4. repeated rapid appearance/disappearance
+5. unexpected security protocol change
+6. large signal deviation
+7. unusual number of BSSIDs for an SSID
+8. new network appearing in a previously stable environment
+
+Do NOT label an anomaly as an attack.
+
+Use:
+
+ANOMALY DETECTED
+
+and provide:
+
+reason
+evidence
+timestamp
+confidence
+
+============================================================
+FEATURE GROUP 18
+BASELINE SYSTEM
+============================================================
+
+Allow the user to establish a baseline.
+
+Example:
+
+"Create Baseline"
+
+The application records the normal observed wireless environment.
+
+Baseline can include:
+
+known BSSIDs
+known SSIDs
+normal channels
+normal security
+normal signal ranges
+normal network count
+
+Later scans are compared with the baseline.
+
+============================================================
+FEATURE GROUP 19
+BASELINE DEVIATION
+============================================================
+
+Detect:
+
+unknown BSSID
+unknown SSID
+security change
+new channel
+unusual network count
+large signal deviation
+
+Display:
+
+BASELINE DEVIATION
+
+Example:
+
+"3 previously unseen BSSIDs detected."
+
+Do not claim malicious activity.
+
+============================================================
+FEATURE GROUP 20
+ENVIRONMENT PROFILE
+============================================================
+
+Create a:
+
+Wireless Environment Profile
+
+Display:
+
+Total observed BSSIDs
+Unique SSIDs
+2.4 GHz networks
+5 GHz networks
+Open networks
+WPA networks
+WPA2 networks
+WPA3 networks
+WEP networks
+Channel distribution
+Average signal
+Strongest network
+Weakest network
+Known networks
+Unknown networks
+
+============================================================
+FEATURE GROUP 21
+VENDOR / OUI ANALYSIS
+============================================================
+
+If feasible, add passive MAC vendor analysis.
+
+Use a LOCAL OUI database.
+
+Do not rely on external API calls by default.
+
+Display:
+
+Vendor
+
+Example:
+
+BSSID
+AA:BB:CC:DD:EE:FF
+
+Vendor:
+Example Vendor
+
+If vendor is unknown:
+
+Unknown Vendor
+
+Do not treat vendor identification as proof of device identity.
+
+============================================================
+FEATURE GROUP 22
+SUSPICIOUS PATTERN ANALYSIS
+============================================================
+
+Create a rule-based suspicious-pattern engine.
+
+Potential indicators:
+
+- previously unknown BSSID
+- same SSID with unusual BSSID behavior
+- security downgrade
+- unexpected security protocol
+- abnormal channel behavior
+- baseline deviation
+- repeated rapid state transitions
+- unusual signal behavior
+
+Each finding must show:
+
+Indicator
+Evidence
+Severity
+Timestamp
+
+Never claim:
+
+"Hacker detected"
+
+or:
+
+"Attack confirmed"
+
+Use:
+
+"Potentially suspicious wireless configuration"
+
+or:
+
+"Anomalous wireless observation"
+
+============================================================
+FEATURE GROUP 23
+NETWORK RELATIONSHIP GRAPH
+============================================================
+
+Create a visual relationship view:
+
+SSID
+ ↓
+BSSIDs
+ ↓
+Channels
+ ↓
+Bands
+ ↓
+Security
+
+Example:
+
+HomeWiFi
+ ├── BSSID A
+ │    ├── Channel 6
+ │    └── WPA2
+ │
+ └── BSSID B
+      ├── Channel 11
+      └── WPA2
+
+Use a simple graph/tree representation.
+
+Do not require a heavy graph library unless necessary.
+
+============================================================
+FEATURE GROUP 24
+EVENT SYSTEM
+============================================================
+
+Maintain comprehensive event types:
+
+NEW_NETWORK
+NETWORK_NOT_DETECTED
+NETWORK_REAPPEARED
+SECURITY_CHANGE
+SECURITY_DOWNGRADE
+SECURITY_UPGRADE
+CHANNEL_CHANGE
+SSID_CHANGE
+SIGNAL_CHANGE
+BASELINE_DEVIATION
+ANOMALY_DETECTED
+RISK_CHANGE
+
+Every event should include:
+
+timestamp
+type
+severity
+SSID
+BSSID
+description
+old value
+new value
+evidence
+acknowledged
+
+============================================================
+FEATURE GROUP 25
+EVENT CORRELATION
+============================================================
+
+Correlate related events.
+
+Example:
+
+NEW_NETWORK
++
+OPEN security
++
+baseline deviation
+
+can produce:
+
+"Multiple related indicators detected."
+
+Do NOT call this an attack.
+
+Call it:
+
+"Correlated security indicators"
+
+============================================================
+FEATURE GROUP 26
+EVENT TIMELINE
+============================================================
+
+Create a chronological event timeline.
+
+Example:
+
+23:10
+NEW NETWORK
+
+23:15
+CHANNEL CHANGE
+
+23:17
+SECURITY CHANGE
+
+23:20
+BASELINE DEVIATION
+
+Allow filtering.
+
+============================================================
+FEATURE GROUP 27
+DASHBOARD
+============================================================
+
+Create a professional main dashboard.
+
+Display cards:
+
+TOTAL NETWORKS
+UNIQUE SSIDs
+ACTIVE BSSIDs
+OPEN NETWORKS
+WPA2/WPA3
+CHANNELS
+ANOMALIES
+HIGH-RISK EVENTS
+
+Add:
+
+Monitoring Status
+Last Scan
+Scan Duration
+
+============================================================
+FEATURE GROUP 28
+SECURITY OVERVIEW
+============================================================
+
+Create a security overview panel.
+
+Show distribution:
+
+OPEN
+WEP
+WPA
+WPA2
+WPA3
+
+Also:
+
+Low Risk
+Medium Risk
+High Risk
+Critical Risk
+
+Use charts where useful.
+
+============================================================
+FEATURE GROUP 29
+HISTORICAL DASHBOARD
+============================================================
+
+Add:
+
+Current
+Last Hour
+Last 24 Hours
+Last 7 Days
+
+Show:
+
+network count
+SSID count
+BSSID count
+security changes
+new networks
+removed networks
+anomalies
+
+Only show time ranges for which sufficient data exists.
+
+============================================================
+FEATURE GROUP 30
+SEARCH
+============================================================
+
+Global search should support:
+
+SSID
+BSSID
+Vendor
+Security
+Encryption
+Channel
+Band
+Event type
+
+============================================================
+FEATURE GROUP 31
+ADVANCED FILTERS
+============================================================
+
+Add filters:
+
+Security
+Risk
+Band
+Channel
+Vendor
+Active/Inactive
+Known/Unknown
+Event severity
+
+Allow combining filters.
+
+============================================================
+FEATURE GROUP 32
+SORTING
+============================================================
+
+Support sorting by:
+
+Signal
+RSSI
+SSID
+BSSID
+Channel
+Security
+Risk
+First Seen
+Last Seen
+Observation Count
+
+============================================================
+FEATURE GROUP 33
+NETWORK DETAILS
+============================================================
+
+Expand Network Details into a multi-section view:
+
+IDENTITY
+SSID
+BSSID
+Vendor
+
+SIGNAL
+Current
+Average
+Minimum
+Maximum
+
+RADIO
+Channel
+Band
+Radio Type
+
+SECURITY
+Authentication
+Encryption
+Score
+Risk
+
+HISTORY
+First Seen
+Last Seen
+Observation Count
+
+CHANGES
+Security changes
+Channel changes
+SSID changes
+
+ANOMALIES
+Detected anomalies
+
+============================================================
+FEATURE GROUP 34
+NETWORK HISTORY
+============================================================
+
+Display observations over time.
+
+Columns:
+
+Timestamp
+Signal
+RSSI
+Channel
+Band
+Security
+Encryption
+Risk
+
+Allow export.
+
+============================================================
+FEATURE GROUP 35
+REPORT GENERATION
+============================================================
+
+Implement report generation.
+
+Report types:
+
+Current Scan Report
+Security Report
+Monitoring Report
+Network Profile Report
+Baseline Deviation Report
+
+============================================================
+FEATURE GROUP 36
+HTML REPORT
+============================================================
+
+Generate professional HTML reports.
+
+Include:
+
+title
+timestamp
+summary
+network statistics
+security distribution
+risk distribution
+events
+anomalies
+channel analysis
+network details
+limitations
+
+Use a clean professional layout.
+
+============================================================
+FEATURE GROUP 37
+CSV EXPORT
+============================================================
+
+Support:
+
+Current Networks
+Network History
+Events
+Anomalies
+Security Changes
+Channel Statistics
+
+============================================================
+FEATURE GROUP 38
+JSON EXPORT
+============================================================
+
+Allow exporting selected datasets to JSON.
+
+============================================================
+FEATURE GROUP 39
+DATABASE BACKUP
+============================================================
+
+Add:
+
+Backup Database
+
+Create timestamped backups.
+
+Example:
+
+wifi_scanner_backup_20260919_223500.db
+
+Add:
+
+Restore Database
+
+ONLY after confirmation.
+
+Never overwrite the current database without confirmation.
+
+============================================================
+FEATURE GROUP 40
+DATABASE MANAGEMENT
+============================================================
+
+Create a Database Management window.
+
+Display:
+
+Database path
+Database size
+Total scans
+Total observations
+Total events
+Tracked networks
+
+Actions:
+
+Backup
+Clear events
+Clear observations
+Clear history
+
+Require confirmation before destructive operations.
+
+============================================================
+FEATURE GROUP 41
+SETTINGS
+============================================================
+
+Create Settings.
+
+Allow configuration of:
+
+scan interval
+missing scan threshold
+signal-change threshold
+risk thresholds
+auto monitoring
+database path if practical
+report directory
+event retention
+
+Save settings to:
+
+config.json
+
+============================================================
+FEATURE GROUP 42
+APPLICATION DIAGNOSTICS
+============================================================
+
+Create Diagnostics.
+
+Display:
+
+Python version
+Operating system
+Scanner status
+Wi-Fi adapter status
+Database status
+Database size
+Last scan duration
+Last scan error
+Number of tracked BSSIDs
+Number of observations
+
+Add:
+
+Run Diagnostics
+
+============================================================
+FEATURE GROUP 43
+LOGGING
+============================================================
+
+Create application logs.
+
+Log:
+
+startup
+shutdown
+scan start
+scan end
+scan failures
+database failures
+event generation
+report generation
+
+Do not log credentials.
+
+============================================================
+FEATURE GROUP 44
+PERFORMANCE
+============================================================
+
+The application should remain responsive with:
+
+100+ BSSIDs
+1000+ observations
+10000+ historical observations
+
+Use database indexes.
+
+Do not load the entire database unnecessarily.
+
+Use pagination for large tables where appropriate.
+
+============================================================
+FEATURE GROUP 45
+BACKGROUND WORKERS
+============================================================
+
+Separate:
+
+scanner thread
+database operations
+analytics operations
+
+where practical.
+
+Never block the GUI unnecessarily.
+
+============================================================
+FEATURE GROUP 46
+NOTIFICATION SYSTEM
+============================================================
+
+Create an in-application notification area.
+
+Examples:
+
+"New network detected"
+
+"Security configuration changed"
+
+"Baseline deviation detected"
+
+"High severity event detected"
+
+Do not use external notification services unless necessary.
+
+============================================================
+FEATURE GROUP 47
+ALERT CENTER
+============================================================
+
+Create:
+
+Security Alert Center
+
+Show:
+
+Active Alerts
+Acknowledged Alerts
+Resolved/Expired Alerts
+
+Allow:
+
+Acknowledge
+View Details
+Filter
+Search
+
+============================================================
+FEATURE GROUP 48
+RISK EXPLANATION
+============================================================
+
+Every risk score must be explainable.
+
+Example:
+
+Risk Score: 72
+
+Contributing factors:
+
++30 security downgrade
++20 baseline deviation
++12 unusual channel change
++10 open configuration
+
+The exact scoring system should be deterministic and documented.
+
+============================================================
+FEATURE GROUP 49
+EXPLAINABLE ANOMALIES
+============================================================
+
+Every anomaly must explain:
+
+WHAT happened?
+
+WHEN?
+
+WHICH BSSID?
+
+WHAT was different?
+
+WHY was it flagged?
+
+Example:
+
+ANOMALY
+
+BSSID:
+AA:BB:CC:DD:EE:FF
+
+Observation:
+
+Security changed from WPA2 to OPEN.
+
+Reason:
+
+The observed authentication configuration differs from the
+previous baseline.
+
+============================================================
+FEATURE GROUP 50
+PRIVACY
+============================================================
+
+The application should be local-first.
+
+Do not upload scan data anywhere.
+
+Do not collect passwords.
+
+Do not collect credentials.
+
+Do not transmit BSSID/SSID data to external servers by default.
+
+Document this in README.
+
+============================================================
+FEATURE GROUP 51
+DATA VALIDATION
+============================================================
+
+Validate:
+
+BSSID format
+SSID length
+signal range
+channel values
+security values
+timestamps
+
+Malformed data should not crash the application.
+
+============================================================
+FEATURE GROUP 52
+ROBUST NETSH PARSER
+============================================================
+
+The parser must tolerate:
+
+different whitespace
+localized formatting where possible
+missing fields
+hidden SSIDs
+multiple BSSIDs
+unexpected fields
+empty values
+
+Never assume exact spacing.
+
+============================================================
+FEATURE GROUP 53
+TESTING
+============================================================
+
+Create comprehensive tests.
+
+Test:
+
+parser
+normalizer
+security analyzer
+risk engine
+database
+database migrations
+change detector
+state manager
+event manager
+baseline manager
+anomaly detector
+channel analyzer
+signal analyzer
+report generation
+
+Test edge cases.
+
+============================================================
+FEATURE GROUP 54
+SIMULATION MODE
+============================================================
+
+Add a safe OFFLINE SIMULATION MODE for development/testing.
+
+This is NOT a wireless attack simulator.
+
+It should simply feed predefined network observations into the monitoring
+pipeline.
+
+Allow scenarios such as:
+
+stable environment
+new network
+network disappears
+network reappears
+security downgrade
+security upgrade
+channel change
+SSID change
+signal anomaly
+baseline deviation
+
+This allows testing without relying on real Wi-Fi changes.
+
+============================================================
+FEATURE GROUP 55
+DEMO MODE
+============================================================
+
+Create a Demo Mode.
+
+The application can load sample wireless data.
+
+Display:
+
+"DEMO MODE"
+
+clearly.
+
+Do not mix demo data with real monitoring data unless explicitly selected.
+
+============================================================
+FEATURE GROUP 56
+UI NAVIGATION
+============================================================
+
+Create a sidebar or tabbed navigation if it improves the existing GUI.
+
+Suggested sections:
+
+Dashboard
+Live Scanner
+Security Monitor
+Networks
+History
+Events
+Analytics
+Anomalies
+Baseline
+Reports
+Database
+Settings
+Diagnostics
+
+Do not sacrifice usability for complexity.
+
+============================================================
+FEATURE GROUP 57
+DASHBOARD LAYOUT
+============================================================
+
+Suggested dashboard:
+
+-------------------------------------------------------
+Wi-Fi Security Intelligence Platform
+-------------------------------------------------------
+
+Monitoring: ACTIVE
+
+[Networks] [SSIDs] [BSSIDs] [Open] [WPA2/3] [Alerts]
+
+-------------------------------------------------------
+
+Security Distribution
+[Chart]
+
+Channel Density
+[Chart]
+
+Signal Overview
+[Chart]
+
+-------------------------------------------------------
+
+Recent Security Events
+[Table]
+
+-------------------------------------------------------
+
+Recent Anomalies
+[Table]
+
+-------------------------------------------------------
+
+Baseline Status
+[Panel]
+
+-------------------------------------------------------
+
+============================================================
+FEATURE GROUP 58
+THEME
+============================================================
+
+Use a professional cybersecurity dashboard style.
+
+Keep it readable.
+
+Use:
+
+consistent typography
+spacing
+panels
+tables
+status indicators
+
+Do not overuse colors.
+
+Critical information must also be represented textually.
+
+============================================================
+FEATURE GROUP 59
+RESPONSIVE WINDOW
+============================================================
+
+Support:
+
+resize
+maximize
+minimum size
+
+Tables should expand correctly.
+
+Charts should resize.
+
+Panels should not overlap.
+
+============================================================
+FEATURE GROUP 60
+DOCUMENTATION
+============================================================
+
+Completely rewrite/update README.
+
+Include:
+
+Project overview
+Features
+Architecture
+Installation
+Usage
+Database
+Monitoring
+Security engine
+Risk engine
+Anomaly detection
+Baseline system
+Reports
+Simulation mode
+Demo mode
+Testing
+Limitations
+Privacy
+Security scope
+Future work
+
+============================================================
+FEATURE GROUP 61
+PROJECT ARCHITECTURE DOCUMENT
+============================================================
+
+Create:
+
+docs/ARCHITECTURE.md
+
+Explain:
+
+scanner
+parser
+database
+monitoring
+security engine
+analytics
+anomaly engine
+risk engine
+GUI
+
+Include ASCII architecture diagrams.
+
+============================================================
+FEATURE GROUP 62
+DATABASE DOCUMENTATION
+============================================================
+
+Create:
+
+docs/DATABASE.md
+
+Document:
+
+tables
+columns
+relationships
+indexes
+migrations
+retention
+
+============================================================
+FEATURE GROUP 63
+SECURITY DOCUMENTATION
+============================================================
+
+Create:
+
+docs/SECURITY_MODEL.md
+
+Explain:
+
+heuristic risk
+security scoring
+anomaly detection
+limitations
+false positives
+false negatives
+passive monitoring
+
+============================================================
+FEATURE GROUP 64
+USER GUIDE
+============================================================
+
+Create:
+
+docs/USER_GUIDE.md
+
+Explain:
+
+how to scan
+how to monitor
+how to establish baseline
+how to interpret alerts
+how to view history
+how to generate reports
+how to export data
+
+============================================================
+FEATURE GROUP 65
+ACADEMIC PROJECT DOCUMENTATION
+============================================================
+
+Create:
+
+docs/PROJECT_REPORT.md
+
+Include:
+
+Problem Statement
+Objectives
+Existing System
+Proposed System
+Technology Stack
+Architecture
+Methodology
+Modules
+Database Design
+Algorithms
+Risk Model
+Anomaly Detection
+Results
+Limitations
+Future Scope
+
+Write it in an academic/project-report style.
+
+============================================================
+FEATURE GROUP 66
+SECURITY LIMITATIONS
+============================================================
+
+The application must explicitly explain:
+
+A passive scanner cannot determine whether an AP is malicious with certainty.
+
+An unfamiliar SSID is not automatically malicious.
+
+A new BSSID is not automatically an attack.
+
+A security configuration change does not prove compromise.
+
+Signal changes do not prove movement or attack activity.
+
+Channel changes do not prove interference.
+
+Risk scores are heuristic.
+
+Anomalies require investigation.
+
+============================================================
+FEATURE GROUP 67
+NO FALSE SECURITY CLAIMS
+============================================================
+
+Never display:
+
+"Hacker detected"
+
+"Attack detected"
+
+"Router hacked"
+
+"Device compromised"
+
+unless there is actual evidence from a future explicitly designed
+detection mechanism.
+
+Use:
+
+"Potential anomaly"
+
+"Security configuration change"
+
+"Baseline deviation"
+
+"Potentially suspicious pattern"
+
+============================================================
+FEATURE GROUP 68
+APPLICATION QUALITY
+============================================================
+
+Use:
+
+type hints
+dataclasses
+docstrings
+clean architecture
+logging
+error handling
+unit tests
+database transactions
+parameterized SQL
+configuration management
+
+Avoid:
+
+giant files
+duplicate code
+global mutable state
+hardcoded paths
+hardcoded credentials
+unnecessary dependencies
+
+============================================================
+FEATURE GROUP 69
+MIGRATION SAFETY
+============================================================
+
+Before modifying the database schema:
+
+1. detect current schema
+2. backup database
+3. apply migration
+4. verify migration
+5. continue startup
+
+Never destroy existing scan history.
+
+============================================================
+FEATURE GROUP 70
+FINAL ACCEPTANCE TEST
+============================================================
+
+After implementation:
+
+1. Start application.
+2. Verify dashboard.
+3. Perform real scan.
+4. Verify current networks.
+5. Save scan.
+6. Perform another scan.
+7. Verify no unnecessary duplicate events.
+8. Open Network Profile.
+9. Open Network History.
+10. Open Security Monitor.
+11. Open Analytics.
+12. Open Events.
+13. Test filtering.
+14. Test search.
+15. Test baseline.
+16. Test anomaly detection.
+17. Test reports.
+18. Export CSV.
+19. Export JSON.
+20. Generate HTML report.
+21. Backup database.
+22. Open Diagnostics.
+23. Test Settings.
+24. Test Simulation Mode.
+25. Run unit tests.
+26. Verify GUI responsiveness.
+27. Verify database persistence.
+28. Restart application.
+29. Verify history remains.
+30. Verify monitoring resumes correctly.
+
+============================================================
+FINAL REQUIREMENT
+============================================================
+
+Do not stop after creating files.
+
+Actually run the application.
+
+Actually test the major workflows.
+
+Fix errors.
+
+Run the unit tests.
+
+If a feature cannot be implemented reliably with the available Windows
+WLAN information, implement the safe version and clearly document the
+limitation rather than fabricating data.
+
+============================================================
+IMPLEMENTATION STRATEGY
+============================================================
+
+Do NOT attempt to write all features in one uncontrolled change.
+
+Implement in controlled stages:
+
+STAGE 1
+Architecture + database expansion
+
+STAGE 2
+Advanced monitoring
+
+STAGE 3
+Analytics
+
+STAGE 4
+Baseline engine
+
+STAGE 5
+Anomaly detection
+
+STAGE 6
+Risk engine
+
+STAGE 7
+Advanced dashboard
+
+STAGE 8
+Reports
+
+STAGE 9
+Simulation/demo mode
+
+STAGE 10
+Testing + optimization + documentation
+
+After each stage:
+
+- run tests
+- run the application
+- fix errors
+- preserve existing functionality
+
+============================================================
+FINAL REPORT
+============================================================
+
+At the end provide:
+
+1. Complete feature list
+2. Architecture changes
+3. New files
+4. Modified files
+5. Database schema
+6. Algorithms implemented
+7. Risk model
+8. Anomaly model
+9. GUI modules
+10. Reports
+11. Testing results
+12. Performance observations
+13. Remaining limitations
+14. How to run the application
+
+Do not claim features are complete if they were not actually implemented
+and tested.
+
+The final result should be a sophisticated defensive Wi-Fi Security
+Intelligence and Monitoring Platform built on top of the existing working
+application.
