@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Fi Security Intelligence & Monitoring Platform – Features Guide</title>
+    <style>
+        :root {
+            --primary: #0f2942;
+            --accent: #1e5f8a;
+            --teal: #0d9488;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --success: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, var(--primary) 0%, #1a365d 100%);
+            color: white;
+            padding: 36px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(15, 41, 66, 0.15);
+            margin-bottom: 24px;
+        }
+
+        .header-banner h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-banner p {
+            font-size: 15px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+        }
+
+        .header-badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-passive { background: #0284c7; color: white; }
+        .badge-windows { background: #334155; color: white; }
+        .badge-offline { background: #16a34a; color: white; }
+        .badge-new { background: #f59e0b; color: #1e293b; font-weight: 700; }
+
+        .print-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .btn-print {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background 0.2s;
+        }
+
+        .btn-print:hover {
+            background: #154565;
+        }
+
+        .exec-summary {
+            background: white;
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--accent);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .exec-summary h2 {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 8px;
+            margin: 36px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #f1f5f9;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-header h3 {
+            font-size: 17px;
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .field-group {
+            margin-bottom: 14px;
+        }
+
+        .field-label {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .field-content {
+            font-size: 14.5px;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .field-content ul {
+            padding-left: 20px;
+            margin-top: 6px;
+        }
+
+        .field-content li {
+            margin-bottom: 4px;
+        }
+
+        .app-location {
+            background: #eff6ff;
+            border: 1px dashed #93c5fd;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            color: #1e40af;
+            margin-top: 10px;
+        }
+
+        table.custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 13.5px;
+        }
+
+        table.custom-table th {
+            background: var(--primary);
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table.custom-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.custom-table tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        .faq-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .faq-answer {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 30px 0 20px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .print-btn-container {
+                display: none;
+            }
+            .card {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+            .header-banner {
+                background: #0f2942 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header-banner">
+        <h1>Wi-Fi Security Intelligence &amp; Monitoring Platform</h1>
+        <p>Complete Features &amp; Architecture Guide (Plain-English Edition)</p>
+        <div class="header-badges">
+            <span class="badge badge-passive">100% Passive &amp; Defensive</span>
+            <span class="badge badge-windows">Windows 10 / 11 Native</span>
+            <span class="badge badge-offline">Offline Capability</span>
+            <span class="badge badge-new">Top 5 New Superpowers Included</span>
+        </div>
+    </div>
+
+    <div class="print-btn-container">
+        <button class="btn-print" onclick="window.print()">🖨️ Print or Save as PDF</button>
+    </div>
+
+    <div class="exec-summary">
+        <h2>🛡️ What is this platform? (The 30-Second Summary)</h2>
+        <p>
+            Wi-Fi networks operate invisibly through the airwaves, making it easy for hackers to set up deceptive traps, listen into unencrypted traffic, or trick your laptop into joining counterfeit hotspots.
+        </p>
+        <p style="margin-top: 8px;">
+            This software acts as an automated <b>digital security guard</b> for your wireless environment. It constantly monitors nearby signals, calculates plain-English safety scores, alerts you the moment an attacker creates an "Evil Twin" copy of your network, detects router configuration flaws, optimizes your Wi-Fi channel for speed, and protects the active connection you are currently using—all safely and silently.
+        </p>
+    </div>
+
+    <!-- PART 1: TOP 5 CYBERSECURITY SUPERPOWERS -->
+    <h2 class="section-title">⭐ Part 1: The Top 5 Core Cybersecurity Superpowers</h2>
+
+    <!-- Feature 1: Evil Twin -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🕵️ Feature 1:</span> Evil Twin &amp; Rogue Access Point Detection</h3>
+            <span class="badge badge-new">MAJOR DEFENSE</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    An attacker sets up a fake, cloned Wi-Fi router broadcasting the exact same name (SSID) as your real home, university, or office network (e.g. <i>"VIT-Campus"</i> or <i>"HomeWiFi"</i>). If your laptop or phone connects to this clone, the attacker can spy on everything you do online and steal your passwords.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">❓ Why Does It Matter?</div>
+                <div class="field-content">
+                    Wi-Fi devices are designed to remember network names and connect automatically. If an attacker sits nearby with a fake hotspot using your network's name, your device might join it without asking you. This is one of the most common public Wi-Fi cyber attacks.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work? (Simple Explanation)</div>
+                <div class="field-content">
+                    <b>Think of it like an employee badge check:</b>
+                    <ul>
+                        <li><b>Mark as Trusted:</b> You tell the platform your real router once. The tool records its physical hardware address (BSSID), manufacturer (e.g., TP-Link), security type (WPA2), and channel.</li>
+                        <li><b>Forensic Evidence Scoring:</b> On every scan, if it spots a network with your trusted name but coming from an unrecognized router, it calculates an <b>Evil Twin Evidence Score</b>:
+                            <ul>
+                                <li><b>Same Name, Unknown Hardware Address:</b> +40 points (impersonation detected)</li>
+                                <li><b>Security Weaker than Trusted Version:</b> +30 points (e.g., WPA2 downgraded to Open to lure victims)</li>
+                                <li><b>Different Hardware Manufacturer:</b> +15 points (real is Cisco, clone is a cheap unbranded chip)</li>
+                                <li><b>Different Channel:</b> +5 points (broadcasting on an unexpected frequency)</li>
+                                <li><b>Locally Administered (Fake/Spoofed) MAC:</b> +10 points (indicates software-generated fake MAC)</li>
+                            </ul>
+                        </li>
+                        <li><b>Instant Warning:</b> If the score reaches 40+, it triggers an urgent <b>CRITICAL Alert</b> to stop you from joining!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Go to <b>Baseline &amp; Trust</b> page &rarr; Click <b>⭐ Mark Selected as Trusted</b>. When an impostor appears, a red alert displays on the Dashboard, Events log, and as a Windows desktop notification.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 2: Real-Time Alerts -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🔔 Feature 2:</span> Real-Time Multi-Channel Alerts with Anti-Spam Intelligence</h3>
+            <span class="badge badge-new">SMART NOTIFIER</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    An automated notification system that alerts you the instant a threat is detected, even when the software is minimized, running in the background, or you have stepped away from your desk.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">❓ Why Does It Matter?</div>
+                <div class="field-content">
+                    A security scanner that only writes warnings inside a hidden window won't help you if a hacker attacks while you are browsing or working. You need immediate alerts on your desktop or phone before harm occurs.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work? (Simple Explanation)</div>
+                <div class="field-content">
+                    <b>Fast delivery channels with anti-spam intelligence:</b>
+                    <ul>
+                        <li><b>Windows Native Toast Notifications:</b> Native popups on the bottom-right of your screen. Works 100% offline without needing internet.</li>
+                        <li><b>Telegram Bot &amp; Email:</b> Sends real-time messages directly to your phone so you stay protected while away.</li>
+                        <li><b>Anti-Spam Intelligence:</b>
+                            <ul>
+                                <li><i>Deduplication:</i> Never sends duplicate warnings for the same event.</li>
+                                <li><i>30-Minute Cooldown:</i> If a threat persists, you are alerted once, then the system stays quiet for 30 minutes instead of chiming constantly.</li>
+                                <li><i>Severity Filter:</i> You decide what triggers notifications (e.g. only High &amp; Critical threats, or all events).</li>
+                                <li><i>One-Click Acknowledge:</i> Clicking 'Acknowledge' marks the alert as seen and stops repeats permanently.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Configure in <b>Settings &rarr; Alerts &amp; Notifications</b>. View active and historical alerts under <b>Events &amp; Alerts &rarr; Real-Time Alerts</b>.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 3: Weak Configuration Checks -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🛡️ Feature 3:</span> Weak Configuration &amp; Default Password Auditor</h3>
+            <span class="badge badge-new">VULNERABILITY AUDITOR</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    An automated audit engine that inspects every Wi-Fi network within radio range and pinpoints dangerous configuration weaknesses—even if no active attack is currently occurring.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">❓ Why Does It Matter?</div>
+                <div class="field-content">
+                    Many routers are left with outdated encryption standards or factory default names. Hackers actively drive around looking for these easy targets because they can be broken into in minutes using automated dictionary attacks.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work? (Simple Explanation)</div>
+                <div class="field-content">
+                    <b>Like a security inspector checking doors and window locks:</b>
+                    <ul>
+                        <li><b>Open Networks (+85 points, CRITICAL):</b> Zero encryption or password. Anyone can read your web traffic.</li>
+                        <li><b>WEP Encryption (+75 points, HIGH):</b> Obsolete 1999 standard that can be cracked in under 60 seconds.</li>
+                        <li><b>Legacy WPA (+35 points, MEDIUM):</b> Outdated security susceptible to handshake recovery.</li>
+                        <li><b>TKIP Cipher (+20 points, MEDIUM):</b> Deprecated encryption algorithm that slows Wi-Fi and has known vulnerabilities.</li>
+                        <li><b>Hidden SSIDs (+15 points, LOW):</b> Routers that hide their name. Hiding provides zero real security because laptops scream the name in public search requests.</li>
+                        <li><b>Default Router Names (+15 points, LOW):</b> Factory names like <i>'TP-Link_4F2A'</i>, <i>'JioFiber-9912'</i>, or <i>'NETGEAR62'</i>. These reveal the exact router model and usually imply the owner never changed the default admin password!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Double click any network in <b>Live Scanner</b> &rarr; Open the <b>Weak Config</b> tab. Also shown as tags in the <b>Security Monitor</b> table.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 4: Channel Recommendation Engine -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>📡 Feature 4:</span> Channel Recommendation Engine (2.4 GHz &amp; 5 GHz)</h3>
+            <span class="badge badge-new">SPEED &amp; STABILITY</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    An intelligent radio frequency advisor that tests Wi-Fi airwave congestion and tells you the exact channel number your router should switch to for maximum speed and zero interference.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">❓ Why Does It Matter?</div>
+                <div class="field-content">
+                    Wi-Fi travels through radio frequencies like highway traffic. On the 2.4 GHz band, channels heavily overlap with each other. If your neighbor is on channel 6 and you are on channel 5, your routers will talk over each other, causing lag, high ping in games, and dropped video calls.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work? (Simple Explanation)</div>
+                <div class="field-content">
+                    <b>A smart traffic GPS for your Wi-Fi:</b>
+                    <ul>
+                        <li><b>The 2.4 GHz Problem:</b> Only channels <b>1, 6, and 11</b> do not physically overlap. All intermediate channels collide. The engine calculates an exact <b>Congestion Score</b> for 1, 6, and 11 by adding the signal strength of all routers sharing the channel, plus <b>70%</b> of the signals from overlapping neighboring channels.</li>
+                        <li><b>The 5 GHz Advantage:</b> 5 GHz channels do not overlap! The engine tallies how many networks exist on channels 36, 40, 44, 48, etc., and finds the quietest frequency.</li>
+                        <li><b>Recommendation Output:</b> Gives a clear verdict: <i>"Channel 6 is congested (9 networks, score 480). Channel 11 is clean (1 network, score 45). Recommended: Switch router to Channel 11."</i></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Navigate to <b>Analytics &amp; Signals</b> &rarr; Look at the prominent card at the top titled <b>Channel Recommendation Engine</b> with live 2.4 GHz and 5 GHz badges.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 5: Connection Integrity Monitor -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🔒 Feature 5:</span> Active Connection Integrity Guard (ARP &amp; DNS Watchdog)</h3>
+            <span class="badge badge-new">ACTIVE SESSION GUARD</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    A dedicated watchdog that guards the Wi-Fi network you are <i>currently connected to</i>, protecting you against Man-in-the-Middle (MITM) attacks and fake DNS manipulation.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">❓ Why Does It Matter?</div>
+                <div class="field-content">
+                    Scanning other networks is great, but what about the network you are actively using right now? If a hacker on the same Wi-Fi performs an ARP poisoning attack or alters your DNS server, they can silently divert your banking and email traffic to counterfeit phishing websites.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work? (Simple Explanation)</div>
+                <div class="field-content">
+                    <b>Two continuous integrity checks running quietly under the hood:</b>
+                    <ul>
+                        <li><b>ARP Spoofing Detection:</b> When you connect, your computer talks to your router (the Default Gateway). The monitor memorizes the router's hardware MAC address. If an attacker tries to trick your laptop into sending traffic to them instead (changing the gateway MAC while on the same network), the tool triggers an immediate <b>CRITICAL Tamper Alert</b>.</li>
+                        <li><b>DNS Hijacking Detection:</b> When you type 'google.com', your computer asks a DNS server for the IP address. The monitor periodically resolves canary domains (Google, Cloudflare, Wikipedia) and compares the answers against tamper-proof <b>Cloudflare DNS-over-HTTPS (DoH)</b>. If the IP addresses differ or point to a local private decoy IP, you are warned that your internet is being hijacked!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Shown directly on the <b>Dashboard</b> inside the <b>Connection Health</b> card. You can also click <b>Check Connection Health</b> for an instant test anytime.
+            </div>
+        </div>
+    </div>
+
+    <!-- PART 2: CORE DEFENSIVE FOUNDATION -->
+    <h2 class="section-title">🧱 Part 2: The Core Defensive &amp; Monitoring Foundation</h2>
+
+    <!-- Feature 6: Passive Discovery -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>📻 Feature 6:</span> 100% Passive Wi-Fi Discovery Engine</h3>
+            <span class="badge badge-passive">CORE FOUNDATION</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    The underlying engine that quietly discovers all nearby Wi-Fi networks (SSIDs, MAC addresses, signal strength, channel frequencies, and security protocols) using native Windows wireless services.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    Instead of sending noisy packets, it uses the Windows WLAN query <code>netsh wlan show networks mode=bssid</code>. Like an FM radio, it simply listens to public beacon frames broadcasted voluntarily by nearby routers. It requires zero extra hardware or custom drivers.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Runs automatically in the background. Visible in real time under <b>Live Scanner</b>.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 7: 0-100 Risk Engine -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🧮 Feature 7:</span> Explainable Multi-Factor Risk Engine (0–100 Scoring)</h3>
+            <span class="badge badge-passive">RISK SCORING</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    An intelligent scoring algorithm that grades every network's safety on a clear 0 (Completely Safe) to 100 (Extremely Dangerous) scale, with plain-English explanations of why points were added.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    Evaluates protocol security (Open +85, WEP +75, WPA +35, WPA2 +10, WPA3 0), cipher algorithms (TKIP +20), hidden SSIDs (+15), default names (+15), and sudden security changes (+30). Categorizes networks into 4 simple tiers: <b>LOW</b> (0–29), <b>MEDIUM</b> (30–59), <b>HIGH</b> (60–79), and <b>CRITICAL</b> (80–100).
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Color-coded badges in <b>Live Scanner</b>, <b>Security Monitor</b>, and executive reports.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 8: Lifecycle Tracking -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>⏳ Feature 8:</span> Three-State Lifecycle Tracking &amp; Smart Debouncing</h3>
+            <span class="badge badge-passive">ANTI-FALSE-ALARM</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    A state tracking engine that remembers whether a network is genuinely present, temporarily flickering due to radio interference, or completely gone.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    Uses a 3-strike rule: <code>ACTIVE</code> (currently visible), <code>TEMPORARILY_MISSING</code> (missed 1 scan, waiting to confirm), and <code>NOT_DETECTED</code> (missed 3 consecutive scans, officially gone). This debouncing stops 99% of false alarms caused by temporary radio flickers.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Tracked in the status column of <b>Security Monitor</b> and in the <b>History</b> view.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 9: Baseline System -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>📸 Feature 9:</span> Environment Baseline &amp; Deviation Detector</h3>
+            <span class="badge badge-passive">SNAPSHOT AUDITING</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    Allows you to take a "Snapshot" of what normal Wi-Fi looks like in your home or office, and automatically flags any unexpected new network or altered setting.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    You click <b>Create Baseline</b>. The app saves every known BSSID, SSID, and channel into SQLite. Every future scan is compared against this reference photo. If a strange new router appears or a known router switches channels, a <code>BASELINE_DEVIATION</code> event is logged.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Access via <b>Baseline &amp; Trust</b> in the sidebar menu.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 10: 8 Anomaly Patterns -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🔍 Feature 10:</span> 8-Pattern Passive Anomaly Detection Engine</h3>
+            <span class="badge badge-passive">BEHAVIORAL AI</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    A pattern-matching engine that watches how signals behave over time to catch stealthy hacker tactics.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    Watches for 8 specific patterns: Security Downgrade, Channel Shift, New BSSID on Known SSID, Signal Surge (someone brought an AP close), Signal Drop (jamming), High Density Alert, Baseline Deviation, and Evil Twin Impersonation.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Displayed under <b>Events &amp; Alerts &rarr; Anomaly Log</b>.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 11: MAC OUI Vendor Lookup -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🏷️ Feature 11:</span> Offline Hardware Vendor (OUI) Resolver</h3>
+            <span class="badge badge-passive">HARDWARE FORENSICS</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    Identifies the real physical manufacturer of any Wi-Fi router (e.g. Apple, Cisco, TP-Link, Intel, Raspberry Pi) without needing an internet connection.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    The first 3 bytes of a MAC address are an IEEE Organizationally Unique Identifier (OUI). The app carries a built-in offline database of thousands of manufacturers and looks them up in memory in less than 1 millisecond.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Shown in the <b>Vendor</b> column in Live Scanner, Security Monitor, and Network Details.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 12: Offline Simulation Mode -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🎮 Feature 12:</span> Offline Cyber Simulation &amp; Demo Mode</h3>
+            <span class="badge badge-passive">TRAINING &amp; LABS</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    A safe virtual testing environment that lets you simulate cyber attacks (Evil Twins, rogue APs, security downgrades) without altering real-world hardware.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    When enabled, the scanner generates realistic virtual networks and injects intentional vulnerabilities. This lets students, professors, and testers verify that all charts, risk engines, and alerts react properly.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Toggle anytime in <b>Settings &rarr; Simulation Mode</b>.
+            </div>
+        </div>
+    </div>
+
+    <!-- PART 3: REPORTING, DATABASE & GUI -->
+    <h2 class="section-title">📊 Part 3: Reports, Data Management &amp; Modern Interface</h2>
+
+    <!-- Feature 13: Executive Reports -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>📑 Feature 13:</span> Executive Security Reports (HTML, CSV, JSON)</h3>
+            <span class="badge badge-passive">REPORTING</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    Generates comprehensive, professional security audit reports in HTML, CSV spreadsheet, and JSON data formats with a single click.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    Compiles scan data, historical anomalies, risk scores, and connection health into clean, publication-ready documents. Perfect for submitting to professors, clients, or IT managers.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Click <b>Reports &amp; Export</b> in the sidebar &rarr; Choose HTML, CSV, or JSON.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 14: SQLite Database & Migrations -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>💾 Feature 14:</span> Automated SQLite Migrations &amp; Backup Controls</h3>
+            <span class="badge badge-passive">STORAGE</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    An enterprise-grade local SQLite database that stores your history, baselines, and alerts, featuring automatic schema upgrades and safe backup/restore tools.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    Tracks schema versions automatically. When features are updated, it adds new tables without breaking or deleting your old history. Also includes one-click timestamped database backups.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Navigate to <b>Database &amp; Maintenance</b> in the sidebar.
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature 15: Sidebar GUI -->
+    <div class="card">
+        <div class="card-header">
+            <h3><span>🖥️ Feature 15:</span> Modern Multi-View Desktop GUI</h3>
+            <span class="badge badge-passive">USER INTERFACE</span>
+        </div>
+        <div class="card-body">
+            <div class="field-group">
+                <div class="field-label">💡 What Is It?</div>
+                <div class="field-content">
+                    A clean, dark/light-themed graphical desktop interface built with native Python Tkinter, featuring a persistent navigation sidebar and responsive widgets.
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-label">⚙️ How Does It Work?</div>
+                <div class="field-content">
+                    Organized into 11 dedicated screens: Dashboard, Live Scanner, Security Monitor, History, Events &amp; Alerts, Analytics, Baseline &amp; Trust, Reports, Database, Settings, and Diagnostics.
+                </div>
+            </div>
+            <div class="app-location">
+                <b>📍 Where To Find It In The App:</b> Launch anytime with <code>python main.py</code>.
+            </div>
+        </div>
+    </div>
+
+    <!-- PART 4: FAQ & SUMMARY TABLE -->
+    <h2 class="section-title">❓ Part 4: Frequently Asked Questions &amp; Master Summary</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">❓ Can this tool hack into or disconnect my neighbor's Wi-Fi?</div>
+        <div class="faq-answer"><b>No.</b> This is a 100% defensive and passive security application. It never transmits deauthentication frames, never injects packets, and never attempts to crack passwords. It strictly acts as a protective shield and audit tool.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">❓ Does the tool require an internet connection to work?</div>
+        <div class="faq-answer"><b>No.</b> The core scanner, offline vendor OUI database, risk scoring engine, baseline system, SQLite database, and Windows toast alerts operate 100% offline. Internet is only used if you optionally enable Telegram notifications or the DoH canary check.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">❓ What should I do if the tool gives me a CRITICAL Evil Twin alert?</div>
+        <div class="faq-answer"><b>Immediately disconnect from that Wi-Fi network!</b> Check your router hardware. If someone nearby is broadcasting a fake copy of your Wi-Fi name, do not enter passwords or sensitive credentials until the rogue access point disappears.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">❓ Why does the tool flag my home router for having a 'Default Router Name'?</div>
+        <div class="faq-answer">If your Wi-Fi is named <i>'TP-Link_XXXX'</i> or <i>'JioFiber-XXXX'</i>, an attacker knows exactly what brand you own and can guess default administrative passwords. Renaming your network to something unique (like <i>'Skyline_Guest'</i>) fixes this issue immediately.</div>
+    </div>
+
+    <h3 style="margin-top: 24px; margin-bottom: 12px; color: var(--primary);">📋 Complete Feature Summary Matrix</h3>
+
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 25%;">Feature Name</th>
+                <th style="width: 35%;">Primary Purpose</th>
+                <th style="width: 35%;">Key Security Benefit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><b>1</b></td><td><b>Evil Twin Detection</b></td><td>Spots fake duplicate networks</td><td>Prevents credential theft &amp; phishing</td></tr>
+            <tr><td><b>2</b></td><td><b>Real-Time Smart Alerts</b></td><td>Instant notifications via Toast/Telegram</td><td>Notifies immediately with zero spam</td></tr>
+            <tr><td><b>3</b></td><td><b>Weak Config Checks</b></td><td>Audits open Wi-Fi, WEP, default names</td><td>Finds vulnerable routers before attackers</td></tr>
+            <tr><td><b>4</b></td><td><b>Channel Recommendation</b></td><td>Calculates signal-weighted congestion</td><td>Boosts Wi-Fi speed and cuts latency</td></tr>
+            <tr><td><b>5</b></td><td><b>Connection Health Guard</b></td><td>Monitors gateway MAC &amp; DNS via DoH</td><td>Protects active connected session</td></tr>
+            <tr><td><b>6</b></td><td><b>Passive Wi-Fi Discovery</b></td><td>Listens to native Windows 802.11 beacons</td><td>100% legal, non-intrusive, zero noise</td></tr>
+            <tr><td><b>7</b></td><td><b>0-100 Risk Engine</b></td><td>Calculates explainable safety scores</td><td>Clear risk ratings for non-technical users</td></tr>
+            <tr><td><b>8</b></td><td><b>Lifecycle &amp; Debouncing</b></td><td>Active / Temp Missing / Gone states</td><td>Eliminates false alarms from RF flickers</td></tr>
+            <tr><td><b>9</b></td><td><b>Environment Baseline</b></td><td>Saves reference snapshot of your space</td><td>Flags unauthorized newly appearing routers</td></tr>
+            <tr><td><b>10</b></td><td><b>8 Anomaly Patterns</b></td><td>Detects channel hops, signal jumps</td><td>Catches subtle, stealthy attacker activity</td></tr>
+            <tr><td><b>11</b></td><td><b>Hardware OUI Resolver</b></td><td>Translates MAC address to manufacturer</td><td>Identifies spoofed or unbranded hardware</td></tr>
+            <tr><td><b>12</b></td><td><b>Offline Demo Simulator</b></td><td>Injects mock attacks safely</td><td>Ideal for college demos and presentations</td></tr>
+            <tr><td><b>13</b></td><td><b>Executive Reports</b></td><td>Exports clean HTML, CSV, and JSON</td><td>Ready to share with managers &amp; auditors</td></tr>
+            <tr><td><b>14</b></td><td><b>Database &amp; Migrations</b></td><td>Automated SQLite schema management</td><td>Zero data loss across platform updates</td></tr>
+            <tr><td><b>15</b></td><td><b>Sidebar Desktop GUI</b></td><td>Modern 11-panel Tkinter interface</td><td>Intuitive navigation with zero command-line</td></tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Wi-Fi Security Intelligence &amp; Monitoring Platform &nbsp;|&nbsp; 100% Passive &amp; Defensive Scope &nbsp;|&nbsp; Operating System: Windows 10/11
+    </div>
+
+</div>
+
+</body>
+</html>

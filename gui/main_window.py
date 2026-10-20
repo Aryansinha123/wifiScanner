@@ -157,7 +157,7 @@ class MainWindow:
         self.views["Baseline"] = BaselineWindow(self.content_container, self.db)
         self.views["Reports"] = ReportsWindow(self.content_container, self.db)
         self.views["Database"] = DatabaseWindow(self.content_container, self.db)
-        self.views["Settings"] = SettingsWindow(self.content_container, self.config_mgr)
+        self.views["Settings"] = SettingsWindow(self.content_container, self.config_mgr, self.db)
         self.views["Diagnostics"] = DiagnosticsWindow(self.content_container, self.db)
 
         # Show initial view

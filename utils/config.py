@@ -14,7 +14,19 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "reports_dir": "data/reports",
     "exports_dir": "data/exports",
     "simulation_mode": False,
-    "theme": "cybersecurity_dark"
+    "theme": "cybersecurity_dark",
+    "alert_severity_threshold": "HIGH",
+    "alert_cooldown_minutes": 30,
+    "alert_toast_enabled": True,
+    "alert_telegram_enabled": False,
+    "alert_telegram_bot_token": "",
+    "alert_telegram_chat_id": "",
+    "alert_email_enabled": False,
+    "alert_email_smtp_server": "",
+    "alert_email_smtp_port": 587,
+    "alert_email_username": "",
+    "alert_email_password": "",
+    "alert_email_recipient": ""
 }
 
 

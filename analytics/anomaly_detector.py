@@ -133,6 +133,28 @@ class PassiveAnomalyDetector:
                     confidence=0.80
                 ))
 
+        # 3. Check Evil Twin / Rogue AP Anomalies against Trusted Networks
+        try:
+            from security.evil_twin_detector import EvilTwinDetector
+            et_detector = EvilTwinDetector(self.db)
+            evil_twins = et_detector.scan_for_evil_twins(current_networks)
+            for et in evil_twins:
+                anomalies.append(AnomalyFinding(
+                    id=None,
+                    timestamp=timestamp,
+                    anomaly_type="EVIL_TWIN_DETECTED",
+                    severity=et["severity"],
+                    ssid=et["ssid"],
+                    bssid=et["bssid"],
+                    what=et["message"],
+                    when_detected=timestamp,
+                    evidence=str(et.get("evidence_factors", [])),
+                    why_flagged="Access point broadcast matching trusted network SSID with unknown BSSID and/or downgraded security.",
+                    confidence=0.98
+                ))
+        except Exception as err:
+            logger.warning("Error running evil twin detection in anomaly detector: %s", err)
+
         # Persist detected anomalies to repository
         for anomaly in anomalies:
             self.db.repos.save_anomaly(anomaly)

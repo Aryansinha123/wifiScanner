@@ -116,5 +116,58 @@ def apply_migrations(conn: sqlite3.Connection, db_path: str = "data/wifi_scanner
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_baseline_items_bssid ON baseline_items(bssid);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_channel_stats_ch ON channel_stats(channel);")
 
+    # 9. Trusted Networks Table (Feature 1: Evil Twin / Rogue AP Detection)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS trusted_networks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ssid TEXT NOT NULL,
+            bssid TEXT NOT NULL UNIQUE,
+            vendor TEXT DEFAULT 'Unknown Vendor',
+            security TEXT DEFAULT 'WPA2',
+            channel INTEGER,
+            added_at TEXT NOT NULL,
+            notes TEXT DEFAULT ''
+        );
+    """)
+
+    # 10. Real-Time Alerts Table (Feature 2: Deduplication, Cooldown, Severity, Acknowledgment)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS alerts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            alert_type TEXT NOT NULL,
+            severity TEXT NOT NULL,
+            bssid TEXT,
+            ssid TEXT,
+            message TEXT NOT NULL,
+            evidence TEXT DEFAULT '',
+            status TEXT DEFAULT 'NEW',
+            created_at TEXT NOT NULL,
+            last_sent_at TEXT,
+            acknowledged INTEGER DEFAULT 0
+        );
+    """)
+
+    # 11. Connection Integrity Logs Table (Feature 5: Connection Integrity Monitor)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS connection_integrity_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            ssid TEXT,
+            gateway_ip TEXT,
+            gateway_mac TEXT,
+            arp_status TEXT,
+            dns_status TEXT,
+            overall_health TEXT,
+            details TEXT
+        );
+    """)
+
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_trusted_ssid ON trusted_networks(ssid);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_trusted_bssid ON trusted_networks(bssid);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_bssid ON alerts(bssid);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_type ON alerts(alert_type);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_created ON alerts(created_at);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_conn_logs_time ON connection_integrity_logs(timestamp);")
+
     conn.commit()
     logger.info("Database schema migrations verified successfully.")

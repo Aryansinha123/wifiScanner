@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, Any, List, Optional
 from models.network import Network
+from security.weak_config_rules import WEAK_CONFIG_RULES, evaluate_weak_configurations, is_default_router_name
 
 logger = logging.getLogger(__name__)
 
@@ -8,35 +9,11 @@ logger = logging.getLogger(__name__)
 class MultiFactorRiskEngine:
     """
     Multi-Factor Heuristic Risk Engine for passive Wi-Fi security scoring (0-100).
-
-    Risk Score Calculation:
-      Base Score (Protocol):
-        - WPA3: 0 points
-        - WPA2: 10 points
-        - WPA: 35 points
-        - WEP: 75 points
-        - OPEN: 85 points
-        - UNKNOWN: 40 points
-
-      Cipher Modifiers:
-        - Encryption NONE: +15 points
-        - Encryption TKIP: +20 points
-        - Encryption WEP: +15 points
-
-      Behavioral & Observational Modifiers:
-        - Security Downgrade observed: +30 points
-        - Baseline Deviation detected: +20 points
-        - Multiple BSSIDs for SSID anomaly: +15 points
-        - Rapid appearance/disappearance: +10 points
-        - Unusual channel change: +10 points
-        - Large signal deviation: +10 points
-
-      Risk Classification Thresholds:
-        - 0 - 20: LOW
-        - 21 - 45: MEDIUM
-        - 46 - 70: HIGH
-        - 71 - 100: CRITICAL
+    Integrates protocol rules, cipher weaknesses, weak-configuration checks,
+    and behavioral/baseline deviations.
     """
+
+    weak_config_rules = WEAK_CONFIG_RULES
 
     @staticmethod
     def calculate_risk(
@@ -88,7 +65,16 @@ class MultiFactorRiskEngine:
             score += 15
             factors.append({"factor": "Deprecated WEP Cipher", "points": 15, "type": "cipher"})
 
-        # 3. Observational & Behavioral Risk Factors
+        # 3. Weak Configuration Modifiers (Hidden SSID, Default Router Names)
+        if not network.ssid or network.ssid.strip() in ("", "<Hidden Network>"):
+            score += 15
+            factors.append({"factor": "Hidden SSID Broadcast (+15)", "points": 15, "type": "weak_config"})
+
+        if is_default_router_name(network.ssid):
+            score += 15
+            factors.append({"factor": "Default Router Naming Pattern (+15)", "points": 15, "type": "weak_config"})
+
+        # 4. Observational & Behavioral Risk Factors
         if has_security_downgrade:
             score += 30
             factors.append({"factor": "Security Configuration Downgrade", "points": 30, "type": "behavior"})
@@ -120,9 +106,12 @@ class MultiFactorRiskEngine:
         else:
             level = "CRITICAL"
 
+        weak_findings = evaluate_weak_configurations(network)
+
         return {
             "score": final_score,
             "level": level,
             "factors": factors,
+            "weak_config_findings": weak_findings,
             "explanation": f"Heuristic risk score {final_score}/100 ({level}) based on {len(factors)} contributing factors."
         }

@@ -37,5 +37,6 @@ class ConfigurationAnalyzer:
             "risk_level": risk_data["level"],
             "risk_factors": risk_data["factors"],
             "summary": summary,
-            "rule_findings": rules
+            "rule_findings": rules,
+            "weak_config_findings": risk_data.get("weak_config_findings", [])
         }
